@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import androidx.room.Update
 import com.example.allaccountbook.database.entity.SavingEntity
 
@@ -17,4 +18,7 @@ interface SavingDAO {
 
     @Update
     suspend fun UpdateSaving(entity: SavingEntity)
+
+    @Query("SELECT * FROM `Saving` WHERE `Saving`.transactionId = :id")
+    suspend fun getByTransactionId(id : Int) : SavingEntity?
 }

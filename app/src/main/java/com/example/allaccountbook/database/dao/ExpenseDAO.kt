@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import androidx.room.Update
 import com.example.allaccountbook.database.entity.ExpenseEntity
 
@@ -17,4 +18,7 @@ interface ExpenseDAO {
 
     @Update
     suspend fun UpdateExpense(entity: ExpenseEntity)
+
+    @Query("SELECT * FROM `Expense` WHERE `Expense`.transactionId = :id")
+    suspend fun getByTransactionId(id : Int): ExpenseEntity?
 }

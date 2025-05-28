@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import androidx.room.Update
 import com.example.allaccountbook.database.entity.TransactionEntity
 
@@ -17,4 +18,7 @@ interface TransactionDAO {
 
     @Update
     suspend fun UpdateTransaction(entity: TransactionEntity)
+
+    @Query("SELECT * FROM `Transaction`")
+    suspend fun getAllTransaction(): List<TransactionEntity>
 }
