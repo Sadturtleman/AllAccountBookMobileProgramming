@@ -1,4 +1,5 @@
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -38,6 +39,9 @@ fun MainScreen() {
             getTotalSavings + getTotalInvestments + getAvailableBalance
         }
     } // 전체 총 금액
+
+    var getTotalLentAmount by remember { mutableStateOf(0) } // 빌린 전체 금액
+    var getTotalBorrowedAmount by remember { mutableStateOf(0) } // 빌려준 전체 금액
 
 
     Column(
@@ -97,10 +101,42 @@ fun MainScreen() {
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                InfoRow(label = "전체 총 금액", value = formatWithCommas(getTotalAmount), fontsize = 25)
-                InfoRow(label = "저축 총계", value = formatWithCommas(getTotalSavings))
-                InfoRow(label = "투자 총계", value = formatWithCommas(getTotalInvestments))
-                InfoRow(label = "사용 가능 금액", value = formatWithCommas(getAvailableBalance))
+                InfoRow(
+                    label = "전체 총 금액",
+                    value = formatWithCommas(getTotalAmount),
+                    fontsize = 25,
+                    modifier = Modifier.clickable{/* 화면 이동 */}
+                )
+
+                InfoRow(
+                    label = "저축 총계",
+                    value = formatWithCommas(getTotalSavings),
+                    modifier = Modifier.clickable{/* 화면 이동 */}
+                )
+
+                InfoRow(
+                    label = "투자 총계",
+                    value = formatWithCommas(getTotalInvestments),
+                    modifier = Modifier.clickable{/* 화면 이동 */}
+                )
+
+                InfoRow(
+                    label = "사용 가능 금액",
+                    value = formatWithCommas(getAvailableBalance),
+                    modifier = Modifier.clickable{/* 화면 이동 */}
+                )
+
+                InfoRow(
+                    label = "빌린 전체 금액",
+                    value = formatWithCommas(getTotalLentAmount),
+                    modifier = Modifier.clickable{/* 화면 이동 */}
+                )
+
+                InfoRow(
+                    label = "빌려준 금액",
+                    value = formatWithCommas(getTotalBorrowedAmount),
+                    modifier = Modifier.clickable{/* 화면 이동 */}
+                )
             }
 
             Column(
@@ -139,10 +175,15 @@ fun MainScreen() {
 }
 
 @Composable
-fun InfoRow(label: String, value: String, fontsize : Int = 20) {
+fun InfoRow(
+    label: String,
+    value: String,
+    fontsize : Int = 20,
+    modifier : Modifier = Modifier
+) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(label, fontSize = fontsize.sp, fontWeight = FontWeight.SemiBold)
         Text(value, fontSize = fontsize.sp)
