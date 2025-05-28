@@ -3,9 +3,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberDatePickerState
@@ -19,7 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.allaccountbook.uiComponent.ButtonNevBar
+import com.example.allaccountbook.uiPersistent.BottomNevBar
+import com.example.allaccountbook.uiPersistent.showDate
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -61,7 +60,7 @@ fun MainScreen() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(selectedDate, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                showDate(selectedDate)
                 Button(onClick = { showDateDialog = true }) {
                     Text("날짜 선택")
                 }
@@ -170,7 +169,7 @@ fun MainScreen() {
             }
         }
 
-        ButtonNevBar()
+        BottomNevBar()
     }
 }
 
