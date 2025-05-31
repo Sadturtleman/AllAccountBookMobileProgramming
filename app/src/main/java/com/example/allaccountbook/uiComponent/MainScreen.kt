@@ -17,8 +17,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.allaccountbook.uiPersistent.BottomNevBar
-import com.example.allaccountbook.uiPersistent.formatWithCommas
+import com.example.allaccountbook.uiPersistent.CustomDatePickerDialog
 import com.example.allaccountbook.uiPersistent.showDate
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -26,23 +28,23 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
-    var selectedDate by remember { mutableStateOf("2025년 05월") }
+fun MainScreen(navController: NavController) {
+    var selectedDate by remember { mutableStateOf("2025년 5월") }
     var showDateDialog by remember { mutableStateOf(false) }
-    var usagePercent by remember { mutableStateOf(70f) } // 남은 사용률 양
+    var usagePercent by remember { mutableStateOf(70f) }
 
-    var getTotalSavings by remember {mutableStateOf(3540000)} // 저축 총계
-    var getTotalInvestments by remember {mutableStateOf(3332000)} // 투자 총계
-    var getAvailableBalance by remember {mutableStateOf(555100)} // 사용 가능 금액
+    var getTotalSavings by remember { mutableStateOf(3540000) }
+    var getTotalInvestments by remember { mutableStateOf(3332000) }
+    var getAvailableBalance by remember { mutableStateOf(555100) }
+
     val getTotalAmount by remember {
         derivedStateOf {
             getTotalSavings + getTotalInvestments + getAvailableBalance
         }
-    } // 전체 총 금액
+    }
 
-    var getTotalLentAmount by remember { mutableStateOf(0) } // 빌린 전체 금액
-    var getTotalBorrowedAmount by remember { mutableStateOf(0) } // 빌려준 전체 금액
-
+    var getTotalLentAmount by remember { mutableStateOf(0) }
+    var getTotalBorrowedAmount by remember { mutableStateOf(0) }
 
     Column(
         modifier = Modifier
@@ -67,32 +69,12 @@ fun MainScreen() {
                 }
             }
 
-            if (showDateDialog) {
-                val datePickerState = rememberDatePickerState()
-                DatePickerDialog(
-                    onDismissRequest = { showDateDialog = false },
-                    confirmButton = {
-                        OutlinedButton(onClick = {
-                            val millis = datePickerState.selectedDateMillis
-                            if (millis != null) {
-                                val date = Date(millis)
-                                val format = SimpleDateFormat("yyyy년 MM월", Locale.KOREA)
-                                selectedDate = format.format(date)
-                            }
-                            showDateDialog = false
-                        }) {
-                            Text("확인")
-                        }
-                    },
-                    dismissButton = {
-                        OutlinedButton(onClick = { showDateDialog = false }) {
-                            Text("취소")
-                        }
-                    }
-                ) {
-                    DatePicker(state = datePickerState)
-                }
-            }
+
+            CustomDatePickerDialog(
+                showDialog = showDateDialog,
+                onDismiss = { showDateDialog = false },
+                onDateSelected = { selectedDate = it }
+            )
 
             Column(
                 modifier = Modifier
@@ -105,37 +87,40 @@ fun MainScreen() {
                     label = "전체 총 금액",
                     value = formatWithCommas(getTotalAmount),
                     fontsize = 25,
-                    modifier = Modifier.clickable{/* 화면 이동 */}
+                    modifier = Modifier.clickable { /* 화면 이동 */ }
                 )
 
                 InfoRow(
                     label = "저축 총계",
                     value = formatWithCommas(getTotalSavings),
-                    modifier = Modifier.clickable{/* 화면 이동 */}
+                    modifier = Modifier.clickable {
+                        navController.navigate("savingDetail")
+                    }
                 )
+
 
                 InfoRow(
                     label = "투자 총계",
                     value = formatWithCommas(getTotalInvestments),
-                    modifier = Modifier.clickable{/* 화면 이동 */}
+                    modifier = Modifier.clickable { navController.navigate("investmentDetail")/* 화면 이동 */ }
                 )
 
                 InfoRow(
                     label = "사용 가능 금액",
                     value = formatWithCommas(getAvailableBalance),
-                    modifier = Modifier.clickable{/* 화면 이동 */}
+                    modifier = Modifier.clickable {  navController.navigate("availableDetail")/* 화면 이동 */ }
                 )
 
                 InfoRow(
                     label = "빌린 전체 금액",
                     value = formatWithCommas(getTotalLentAmount),
-                    modifier = Modifier.clickable{/* 화면 이동 */}
+                    modifier = Modifier.clickable { /* 화면 이동 */ }
                 )
 
                 InfoRow(
                     label = "빌려준 금액",
                     value = formatWithCommas(getTotalBorrowedAmount),
-                    modifier = Modifier.clickable{/* 화면 이동 */}
+                    modifier = Modifier.clickable { /* 화면 이동 */ }
                 )
             }
 
@@ -161,7 +146,6 @@ fun MainScreen() {
                 }
             }
 
-            // 추가하기 버튼
             Button(
                 onClick = { /* 추가하기 */ },
                 modifier = Modifier.fillMaxWidth()
@@ -173,6 +157,7 @@ fun MainScreen() {
         BottomNevBar()
     }
 }
+
 
 @Composable
 fun InfoRow(
@@ -190,8 +175,14 @@ fun InfoRow(
     }
 }
 
+fun formatWithCommas(amount: Int): String {
+    val formatter = DecimalFormat("#,###")
+    return formatter.format(amount)
+}
+
 @Preview
 @Composable
 private fun MainScreenPrev() {
-    MainScreen()
+    val navController = rememberNavController()
+    MainScreen(navController)
 }
