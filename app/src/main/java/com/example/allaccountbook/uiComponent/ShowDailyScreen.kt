@@ -35,24 +35,29 @@ fun ShowDailyScreen() {
     val daysInMonth = yearMonth.lengthOfMonth()
     val startDayOfWeek = parsedDate.dayOfWeek.value % 7 // 일요일 = 0
 
+    // 예시 카테고리
     val categoryOptions = listOf("식비", "교통", "쇼핑", "의료", "여가", "기타")
+    // 예시 카드 / 통장
+    val categoryCardOptions = listOf("카카오 페이", "현금","학생증")
     val selectedCategories = remember { mutableStateListOf<String>() }
+    val selectedCards = remember{mutableStateListOf<String>()}
 
     // 예시 데이터
     val dailyData = listOf(
-        DaySpending("2025-05-01", 32000, "식비"),
-        DaySpending("2025-05-01", 33000, "교통"),
-        DaySpending("2025-05-02", 8000, "교통"),
-        DaySpending("2025-05-03", 15000, "쇼핑"),
-        DaySpending("2025-05-08", 12000, "의료"),
-        DaySpending("2025-05-14", 9000, "여가"),
-        DaySpending("2025-05-20", 5000, "기타")
+        DaySpending("2025-05-01", 32000, "식비", "카카오 페이"),
+        DaySpending("2025-05-01", 33000, "교통", "현금"),
+        DaySpending("2025-05-02", 8000, "교통", "현금"),
+        DaySpending("2025-05-03", 15000, "쇼핑", "학생증"),
+        DaySpending("2025-05-08", 12000, "의료", "카카오 페이"),
+        DaySpending("2025-05-14", 9000, "여가", "학생증"),
+        DaySpending("2025-05-20", 5000, "기타", "카카오 페이")
     )
 
     val filteredData = dailyData.filter { data ->
         val itemDate = LocalDate.parse(data.date)
         itemDate.year == parsedDate.year && itemDate.month == parsedDate.month &&
-                (selectedCategories.isEmpty() || selectedCategories.contains(data.category))
+                (selectedCategories.isEmpty() || selectedCategories.contains(data.category)) &&
+                (selectedCards.isEmpty() || selectedCards.contains(data.card))
     }
 
     val calendarRows = buildCalendarGrid(startDayOfWeek, daysInMonth)
@@ -101,28 +106,52 @@ fun ShowDailyScreen() {
                 DatePicker(state = datePickerState)
             }
         }
-        Spacer(modifier = Modifier.height(8.dp))
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            categoryOptions.forEach { category ->
-                FilterChip(
-                    selected = selectedCategories.contains(category),
-                    onClick = {
-                        if (selectedCategories.contains(category)) {
-                            selectedCategories.remove(category)
-                        } else {
-                            selectedCategories.add(category)
-                        }
-                    },
-                    label = { Text(category) }
-                )
+        Column {
+            Text("📌 카테고리 필터 : ")
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                categoryOptions.forEach { category ->
+                    FilterChip(
+                        selected = selectedCategories.contains(category),
+                        onClick = {
+                            if (selectedCategories.contains(category)) {
+                                selectedCategories.remove(category)
+                            } else {
+                                selectedCategories.add(category)
+                            }
+                        },
+                        label = { Text(category) }
+                    )
+                }
+            }
+            Text("📌 카드 / 통장 필터 : ")
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                categoryCardOptions.forEach { category ->
+                    FilterChip(
+                        selected = selectedCards.contains(category),
+                        onClick = {
+                            if (selectedCards.contains(category)) {
+                                selectedCards.remove(category)
+                            } else {
+                                selectedCards.add(category)
+                            }
+                        },
+                        label = { Text(category) }
+                    )
+                }
             }
         }
+
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -203,7 +232,7 @@ fun buildCalendarGrid(startDayOfWeek: Int, totalDays: Int): List<List<Int?>> {
     return grid
 }
 
-data class DaySpending(val date: String, val amount: Int, val category: String)
+data class DaySpending(val date: String, val amount: Int, val category: String, val card : String)
 
 @Preview
 @Composable
