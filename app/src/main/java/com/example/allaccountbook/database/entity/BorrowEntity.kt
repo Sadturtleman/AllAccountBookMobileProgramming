@@ -16,6 +16,7 @@ data class BorrowEntity(
     @PrimaryKey(autoGenerate = true)
     val borrowId : Int = 0,
     var type: BorrowType,
+    val price : Int,
     val person : String,
     val date : Date,
     val reason : String,

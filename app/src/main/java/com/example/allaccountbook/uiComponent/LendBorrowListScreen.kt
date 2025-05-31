@@ -18,6 +18,9 @@ import com.example.allaccountbook.model.BorrowType
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextDecoration
+import com.example.allaccountbook.uiPersistent.formatWithCommas
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,6 +106,7 @@ fun LendBorrowListScreen(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text("사유", fontSize = 16.sp)
+            Text("금액", fontSize = 16.sp)
             Text("대상", fontSize = 16.sp)
             Text("날짜", fontSize = 16.sp)
             Text("완료여부", fontSize = 16.sp)
@@ -118,11 +122,31 @@ fun LendBorrowListScreen(
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(item.reason)
-                    Text(item.person)
-                    Text(item.date.formatToString())
+                    Text(
+                        style = if (item.finished)
+                            TextStyle(textDecoration = TextDecoration.LineThrough)
+                        else TextStyle(textDecoration =  TextDecoration.None),
+                        text = item.reason
+                    )
+                    Text(
+                        style = if (item.finished)
+                            TextStyle(textDecoration = TextDecoration.LineThrough)
+                        else TextStyle(textDecoration =  TextDecoration.None),
+                        text = formatWithCommas(item.price)
+                    )
+                    Text(
+                        style = if (item.finished)
+                            TextStyle(textDecoration = TextDecoration.LineThrough)
+                        else TextStyle(textDecoration =  TextDecoration.None),
+                        text = item.person)
+                    Text(
+                        style = if (item.finished)
+                            TextStyle(textDecoration = TextDecoration.LineThrough)
+                        else TextStyle(textDecoration =  TextDecoration.None),
+                        text = item.date.formatToString()
+                    )
                     Checkbox(
                         checked = item.finished,
                         onCheckedChange = {

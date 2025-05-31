@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.allaccountbook.uiPersistent.BottomNevBar
+import com.example.allaccountbook.uiPersistent.formatWithCommas
 import com.example.allaccountbook.uiPersistent.showDate
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -26,7 +27,7 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
-    var selectedDate by remember { mutableStateOf("2025년 5월") }
+    var selectedDate by remember { mutableStateOf("2025년 05월") }
     var showDateDialog by remember { mutableStateOf(false) }
     var usagePercent by remember { mutableStateOf(70f) } // 남은 사용률 양
 
@@ -75,7 +76,7 @@ fun MainScreen() {
                             val millis = datePickerState.selectedDateMillis
                             if (millis != null) {
                                 val date = Date(millis)
-                                val format = SimpleDateFormat("yyyy년 M월", Locale.KOREA)
+                                val format = SimpleDateFormat("yyyy년 MM월", Locale.KOREA)
                                 selectedDate = format.format(date)
                             }
                             showDateDialog = false
@@ -187,11 +188,6 @@ fun InfoRow(
         Text(label, fontSize = fontsize.sp, fontWeight = FontWeight.SemiBold)
         Text(value, fontSize = fontsize.sp)
     }
-}
-
-fun formatWithCommas(amount: Int): String {
-    val formatter = DecimalFormat("#,###")
-    return formatter.format(amount)
 }
 
 @Preview

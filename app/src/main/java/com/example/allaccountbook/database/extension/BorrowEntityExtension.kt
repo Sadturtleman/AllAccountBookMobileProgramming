@@ -7,6 +7,7 @@ fun BorrowEntity.toBorrowMoney(): BorrowMoney {
     return BorrowMoney(
         id = borrowId,
         type = type,
+        price = price,
         person = person,
         date = date,
         reason = reason,
@@ -18,6 +19,7 @@ fun BorrowMoney.toEntity(): BorrowEntity {
     return BorrowEntity(
         borrowId = this.id,
         type = this.type,
+        price = this.price,
         person = this.person,
         date = this.date,
         reason = this.reason,

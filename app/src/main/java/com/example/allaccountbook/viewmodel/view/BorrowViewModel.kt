@@ -57,6 +57,7 @@ class BorrowViewModel @Inject constructor(
             val dummyList = listOf(
                 BorrowEntity(
                     type = BorrowType.BORROWED, // 내가 빌려준
+                    price = 10000,
                     person = "철수",
                     date = Date(),
                     reason = "책값",
@@ -64,6 +65,7 @@ class BorrowViewModel @Inject constructor(
                 ),
                 BorrowEntity(
                     type = BorrowType.BORROW, // 내가 빌린
+                    price = 18000,
                     person = "영희",
                     date = Date(),
                     reason = "밥값",
@@ -71,6 +73,7 @@ class BorrowViewModel @Inject constructor(
                 ),
                 BorrowEntity(
                     type = BorrowType.BORROWED,
+                    price = 23000,
                     person = "민수",
                     date = Date(),
                     reason = "택시비",
@@ -78,6 +81,7 @@ class BorrowViewModel @Inject constructor(
                 ),
                 BorrowEntity(
                     type = BorrowType.BORROW,
+                    price = 30000,
                     person = "지민",
                     date = Date(),
                     reason = "커피값",
@@ -85,6 +89,7 @@ class BorrowViewModel @Inject constructor(
                 ),
                 BorrowEntity(
                     type = BorrowType.BORROWED,
+                    price = 40000,
                     person = "현수",
                     date = Date(),
                     reason = "회비",
