@@ -56,127 +56,126 @@ fun ShowDailyScreen() {
 
     val calendarRows = buildCalendarGrid(startDayOfWeek, daysInMonth)
 
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                showDate(selectedMonth)
-                Button(onClick = { showDateDialog = true }) {
-                    Text("날짜 선택")
-                }
-            }
 
-            if (showDateDialog) {
-                val datePickerState = rememberDatePickerState()
-                DatePickerDialog(
-                    onDismissRequest = { showDateDialog = false },
-                    confirmButton = {
-                        OutlinedButton(onClick = {
-                            val millis = datePickerState.selectedDateMillis
-                            if (millis != null) {
-                                val date = Date(millis)
-                                val format = SimpleDateFormat("yyyy년 MM월", Locale.KOREA)
-                                selectedMonth = format.format(date)
-                            }
-                            showDateDialog = false
-                        }) {
-                            Text("확인")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            showDate(selectedMonth)
+            Button(onClick = { showDateDialog = true }) {
+                Text("날짜 선택")
+            }
+        }
+
+        if (showDateDialog) {
+            val datePickerState = rememberDatePickerState()
+            DatePickerDialog(
+                onDismissRequest = { showDateDialog = false },
+                confirmButton = {
+                    OutlinedButton(onClick = {
+                        val millis = datePickerState.selectedDateMillis
+                        if (millis != null) {
+                            val date = Date(millis)
+                            val format = SimpleDateFormat("yyyy년 MM월", Locale.KOREA)
+                            selectedMonth = format.format(date)
+                        }
+                        showDateDialog = false
+                    }) {
+                        Text("확인")
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(onClick = { showDateDialog = false }) {
+                        Text("취소")
+                    }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            categoryOptions.forEach { category ->
+                FilterChip(
+                    selected = selectedCategories.contains(category),
+                    onClick = {
+                        if (selectedCategories.contains(category)) {
+                            selectedCategories.remove(category)
+                        } else {
+                            selectedCategories.add(category)
                         }
                     },
-                    dismissButton = {
-                        OutlinedButton(onClick = { showDateDialog = false }) {
-                            Text("취소")
-                        }
-                    }
-                ) {
-                    DatePicker(state = datePickerState)
-                }
+                    label = { Text(category) }
+                )
             }
-            Spacer(modifier = Modifier.height(8.dp))
+        }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                categoryOptions.forEach { category ->
-                    FilterChip(
-                        selected = selectedCategories.contains(category),
-                        onClick = {
-                            if (selectedCategories.contains(category)) {
-                                selectedCategories.remove(category)
-                            } else {
-                                selectedCategories.add(category)
-                            }
-                        },
-                        label = { Text(category) }
+        Spacer(modifier = Modifier.height(12.dp))
+
+
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .horizontalScroll(rememberScrollState())
+        ) {
+            // 요일 헤더
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("일", "월", "화", "수", "목", "금", "토").forEach {
+                    Text(
+                        text = it,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .padding(horizontal = 28.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-        }
+            Spacer(modifier = Modifier.height(8.dp))
 
-        // 요일 헤더 및 날짜 셀들을 한 번에 가로 스크롤 가능한 영역에 넣음
-        item {
-            Column(
-                modifier = Modifier
-                    .horizontalScroll(rememberScrollState())
-            ) {
-                // 요일 헤더
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("일", "월", "화", "수", "목", "금", "토").forEach {
-                        Text(
-                            text = it,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
+            // 날짜 셀
+            calendarRows.forEach { week ->
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    week.forEach { day ->
+                        Box(
                             modifier = Modifier
-                                .padding(horizontal = 28.dp)
-                        )
-                    }
-                }
+                                .size(72.dp)
+                                .background(Color(0xFFF5F5F5), MaterialTheme.shapes.small),
+                            contentAlignment = Alignment.TopCenter
+                        ) {
+                            if (day != null) {
+                                val dayStr = String.format("%02d", day)
+                                val fullDate = "${parsedDate.year}-${parsedDate.monthValue.toString().padStart(2, '0')}-$dayStr"
+                                val totalAmount = filteredData
+                                    .filter { it.date == fullDate }
+                                    .sumOf { it.amount }
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // 날짜 셀
-                calendarRows.forEach { week ->
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        week.forEach { day ->
-                            Box(
-                                modifier = Modifier
-                                    .size(72.dp)
-                                    .background(Color(0xFFF5F5F5), MaterialTheme.shapes.small),
-                                contentAlignment = Alignment.TopCenter
-                            ) {
-                                if (day != null) {
-                                    val dayStr = String.format("%02d", day)
-                                    val fullDate = "${parsedDate.year}-${parsedDate.monthValue.toString().padStart(2, '0')}-$dayStr"
-                                    val totalAmount = filteredData
-                                        .filter { it.date == fullDate }
-                                        .sumOf { it.amount }
-
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Text("$day", fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                                        Spacer(Modifier.height(4.dp))
-                                        if (totalAmount > 0) {
-                                            Text(
-                                                text = "${formatWithCommas(totalAmount)}원",
-                                                fontSize = 14.sp,
-                                                fontWeight = FontWeight.SemiBold
-                                            )
-                                        }
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text("$day", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                    Spacer(Modifier.height(4.dp))
+                                    if (totalAmount > 0) {
+                                        Text(
+                                            text = "${formatWithCommas(totalAmount)}원",
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
                                     }
                                 }
                             }
@@ -185,6 +184,7 @@ fun ShowDailyScreen() {
                 }
             }
         }
+        BottomNevBar()
     }
 }
 
