@@ -1,6 +1,5 @@
 package com.example.allaccountbook
 
-import MainScreen
 import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.allaccountbook.ui.theme.AllAccountBookTheme
+import com.example.allaccountbook.uiComponent.LendBorrowListScreen
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.HiltAndroidApp
 
@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AllAccountBookTheme {
-                MainScreen()
+                LendBorrowListScreen("2025년 5월")
             }
         }
     }
