@@ -5,7 +5,9 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
+import com.example.allaccountbook.database.model.CategoryConverter
 import com.example.allaccountbook.database.model.DateConverter
+import com.example.allaccountbook.database.model.TransactionCategory
 import java.util.Date
 
 @Entity(
@@ -20,7 +22,7 @@ import java.util.Date
     ],
     indices = [Index(value = ["transactionId"], unique = true)]
 )
-@TypeConverters(DateConverter::class)
+@TypeConverters(DateConverter::class, CategoryConverter::class)
 data class SavingEntity (
     @PrimaryKey(autoGenerate = true)
     val savingId : Int = 0,
@@ -28,5 +30,7 @@ data class SavingEntity (
     var startDate : Date,
     var endDate : Date,
     var price : Int,
-    var percent : Float
+    var name : String,
+    var percent : Float,
+    var category: TransactionCategory
 )

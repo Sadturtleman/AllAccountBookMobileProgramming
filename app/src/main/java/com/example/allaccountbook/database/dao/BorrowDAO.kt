@@ -11,13 +11,13 @@ import com.example.allaccountbook.model.BorrowMoney
 @Dao
 interface BorrowDAO {
     @Insert
-    suspend fun InsertBorrow(entity : BorrowEntity)
+    suspend fun insertBorrow(entity : BorrowEntity)
 
     @Delete
-    suspend fun DeleteBorrow(entity : BorrowEntity)
+    suspend fun deleteBorrow(entity : BorrowEntity)
 
     @Update
-    suspend fun UpdateBorrow(entity : BorrowEntity)
+    suspend fun updateBorrow(entity : BorrowEntity)
 
     @Query("SELECT * FROM `Borrow`")
     suspend fun getAllBorrow() : List<BorrowEntity>

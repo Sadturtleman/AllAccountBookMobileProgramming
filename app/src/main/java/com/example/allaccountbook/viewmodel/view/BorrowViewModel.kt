@@ -52,6 +52,13 @@ class BorrowViewModel @Inject constructor(
             loadAllBorrow()
         }
     }
+
+    fun addBorrow(borrow: BorrowMoney){
+        viewModelScope.launch {
+            repository.insert(borrow.toEntity())
+        }
+    }
+
     fun insertDummyData() {
         viewModelScope.launch {
             val dummyList = listOf(
@@ -102,6 +109,7 @@ class BorrowViewModel @Inject constructor(
             loadAllBorrow()
         }
     }
+
     fun resetAndInsertDummyData() {
         viewModelScope.launch {
             repository.deleteAll()

@@ -11,7 +11,7 @@ import com.example.allaccountbook.database.entity.TransactionEntity
 @Dao
 interface TransactionDAO {
     @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
-    suspend fun InsertTransaction(entity : TransactionEntity)
+    suspend fun InsertTransaction(entity : TransactionEntity) : Long
 
     @Delete
     suspend fun DeleteTransaction(entity: TransactionEntity)

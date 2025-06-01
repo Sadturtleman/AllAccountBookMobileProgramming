@@ -3,6 +3,10 @@ package com.example.allaccountbook.database
 import android.content.Context
 import androidx.room.Room
 import com.example.allaccountbook.database.dao.BorrowDAO
+import com.example.allaccountbook.database.dao.ExpenseDAO
+import com.example.allaccountbook.database.dao.IncomeDAO
+import com.example.allaccountbook.database.dao.SavingDAO
+import com.example.allaccountbook.database.dao.TransactionDAO
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -29,5 +33,23 @@ object DatabaseModule {
         return accountDB.getBorrowDao()
     }
 
-    // 필요하면 다른 DAO도 여기에 추가
+    @Provides
+    fun provideTransactionDao(accountDB: AccountDB) : TransactionDAO{
+        return accountDB.getTransactionDao()
+    }
+
+    @Provides
+    fun provideSavingDao(accountDB: AccountDB) : SavingDAO{
+        return accountDB.getSavingDao()
+    }
+
+    @Provides
+    fun provideIncomeDao(accountDB: AccountDB) : IncomeDAO{
+        return accountDB.getIncomeDao()
+    }
+
+    @Provides
+    fun provideExpenseDao(accountDB: AccountDB) : ExpenseDAO{
+        return accountDB.getExpenseDao()
+    }
 }

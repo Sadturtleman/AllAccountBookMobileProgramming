@@ -11,15 +11,15 @@ class BorrowRepository @Inject constructor(
     private val dao: BorrowDAO
 ) {
     suspend fun insert(borrow: BorrowEntity) {
-        dao.InsertBorrow(borrow)
+        dao.insertBorrow(borrow)
     }
 
     suspend fun update(borrow: BorrowEntity) {
-        dao.UpdateBorrow(borrow)
+        dao.updateBorrow(borrow)
     }
 
     suspend fun delete(borrow: BorrowEntity) {
-        dao.DeleteBorrow(borrow)
+        dao.deleteBorrow(borrow)
     }
 
     suspend fun getAllBorrow(): List<BorrowMoney> {

@@ -46,4 +46,29 @@ class TransactionRepository @Inject constructor(
             }
         }
     }
+
+    suspend fun insertDetail(detail: TransactionDetail) {
+        when (detail) {
+            is TransactionDetail.Saving -> {
+                val transaction = TransactionEntity(transactionType = TransactionType.SAVING)
+                val transactionId = transactionDAO.InsertTransaction(transaction)
+                savingDAO.InsertSaving(detail.data.copy(transactionId = transactionId.toInt()))
+            }
+
+            is TransactionDetail.Income -> {
+                val transaction = TransactionEntity(transactionType = TransactionType.INCOME)
+                val transactionId = transactionDAO.InsertTransaction(transaction)
+                incomeDAO.InsertIncome(detail.data.copy(transactionId = transactionId.toInt()))
+            }
+
+            is TransactionDetail.Expense -> {
+                val transaction = TransactionEntity(transactionType = TransactionType.EXPENSE)
+                val transactionId = transactionDAO.InsertTransaction(transaction)
+                expenseDAO.InsertExpense(detail.data.copy(transactionId = transactionId.toInt()))
+            }
+        }
+    }
+
+
+
 }
