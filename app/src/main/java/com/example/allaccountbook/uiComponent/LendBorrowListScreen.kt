@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.allaccountbook.uiPersistent.BottomNevBar
 import com.example.allaccountbook.uiPersistent.showDate
 import com.example.allaccountbook.viewmodel.view.BorrowViewModel
 import com.example.allaccountbook.model.BorrowType
@@ -21,6 +20,9 @@ import java.util.Date
 import java.util.Locale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
+import com.example.allaccountbook.uiPersistent.BottomNavBar
 import com.example.allaccountbook.uiPersistent.formatWithCommas
 
 
@@ -29,7 +31,8 @@ import com.example.allaccountbook.uiPersistent.formatWithCommas
 fun LendBorrowListScreen(
     selectedDate: String,
     viewModel: BorrowViewModel = hiltViewModel(),
-    onAddClick: () -> Unit = {} // 👈 새로 추가할 항목 입력 화면 이동용 콜백(AddBorrowItemScreen으로 이동 필요)
+    onAddClick: () -> Unit = {}, // 👈 새로 추가할 항목 입력 화면 이동용 콜백(AddBorrowItemScreen으로 이동 필요)
+    navController : NavController
 ) {
     val typeOptions = listOf("빌려준 목록", "빌린 목록")
     var selectedType by remember { mutableStateOf(typeOptions[0]) }
@@ -53,7 +56,11 @@ fun LendBorrowListScreen(
                 Text("+") // 혹은 Icon(Icons.Default.Add, contentDescription = null)
             }
         },
-        bottomBar = { BottomNevBar() }
+        bottomBar = { BottomNavBar(
+            onHomeNavigate = { navController.navigate("home") },
+            onDateNavigate = { navController.navigate("date") },
+            onMapNavigate = { navController.navigate("map") }
+        ) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -163,4 +170,13 @@ fun LendBorrowListScreen(
 // 날짜 포맷 확장 함수
 fun Date.formatToString(): String {
     return SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(this)
+}
+
+@Preview
+@Composable
+private fun LendBorrowPrev() {
+//    LendBorrowListScreen(
+//        "2025년 05월",
+//        onAddClick = {}
+//    )
 }

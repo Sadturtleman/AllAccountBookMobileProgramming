@@ -6,10 +6,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.allaccountbook.uiPersistent.BottomNevBar
+import androidx.navigation.NavController
+import com.example.allaccountbook.uiPersistent.BottomNavBar
 
 @Composable
-fun InvestmentSummaryDetailScreen() {
+fun InvestmentSummaryDetailScreen(navController : NavController) {
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(16.dp)
@@ -47,6 +48,10 @@ fun InvestmentSummaryDetailScreen() {
         }
 
         Spacer(modifier = Modifier.weight(1f))
-        BottomNevBar()
+        BottomNavBar(
+            onHomeNavigate = { navController.navigate("home") },
+            onDateNavigate = { navController.navigate("date") },
+            onMapNavigate = { navController.navigate("map") }
+        )
     }
 }

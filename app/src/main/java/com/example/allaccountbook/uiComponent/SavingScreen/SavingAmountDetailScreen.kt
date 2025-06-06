@@ -20,13 +20,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.allaccountbook.uiPersistent.BottomNevBar
+import androidx.navigation.NavController
+import com.example.allaccountbook.uiPersistent.BottomNavBar
 
 
 @Preview(showBackground = true)
 @Composable
 fun SavingAmountDetailScreenPreview() {
-    SavingAmountDetailScreen()
+//    SavingAmountDetailScreen()
 }
 data class SavingDetailLog(
     val date: String,
@@ -35,7 +36,7 @@ data class SavingDetailLog(
 )
 
 @Composable
-fun SavingAmountDetailScreen() {
+fun SavingAmountDetailScreen(navController: NavController) {
 
     val savingName = "여행 적금"
     val logs = listOf(
@@ -86,6 +87,10 @@ fun SavingAmountDetailScreen() {
             }
         }
         Spacer(modifier = Modifier.weight(1f))
-        BottomNevBar()
+        BottomNavBar(
+            onHomeNavigate = { navController.navigate("home") },
+            onDateNavigate = { navController.navigate("date") },
+            onMapNavigate = { navController.navigate("map") }
+        )
     }
 }

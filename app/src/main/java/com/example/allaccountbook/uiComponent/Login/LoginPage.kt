@@ -1,15 +1,12 @@
-package com.example.allaccountbook.uiComponent
+package com.example.allaccountbook.uiComponent.Login
 
-import android.widget.Button
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -18,13 +15,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role.Companion.Button
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun LoginPage(modifier: Modifier = Modifier) {
+fun LoginPage(onCorrectNavigate: () -> Unit, onWrongNavigate: () -> Unit) {
+
+    // example
+    val sendUserId = "greenjoa"
+    val sendUserPasswd = "1234"
+
 
     var userId by remember {
         mutableStateOf("")
@@ -32,6 +33,10 @@ fun LoginPage(modifier: Modifier = Modifier) {
 
     var password by remember {
         mutableStateOf("")
+    }
+
+    val loginresult by remember {
+        derivedStateOf { userId == sendUserId && password == sendUserPasswd }
     }
 
     Column(
@@ -61,7 +66,8 @@ fun LoginPage(modifier: Modifier = Modifier) {
         }
         Button(
             onClick = {
-
+                if(loginresult) onCorrectNavigate()
+                else onWrongNavigate()
             }
         ){
             Text("로그인")
@@ -72,5 +78,5 @@ fun LoginPage(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 private fun LoginPrev() {
-    LoginPage()
+//    LoginPage()
 }

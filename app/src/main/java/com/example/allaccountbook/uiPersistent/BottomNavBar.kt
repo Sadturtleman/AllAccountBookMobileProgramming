@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun BottomNevBar() {
+fun BottomNavBar(onHomeNavigate: () -> Unit, onDateNavigate: () -> Unit, onMapNavigate: () -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
 
         Spacer(
@@ -33,10 +33,9 @@ fun BottomNevBar() {
                 .padding(top = 8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Button(onClick = { /* (추가) home으로 이동 */ }) { Text("home") }
-            Button(onClick = { /* (추가) 날짜별로 이동 */ }) { Text("날짜별") }
-            Button(onClick = { /* (추가) 카드별으로 이동 */ }) { Text("카드별") }
-            Button(onClick = { /* (추가) map으로 이동 */ }) { Text("map") }
+            Button(onClick = onHomeNavigate) { Text("home") }
+            Button(onClick = onDateNavigate) { Text("날짜별") }
+            Button(onClick = onMapNavigate) { Text("map") }
         }
     }
 }

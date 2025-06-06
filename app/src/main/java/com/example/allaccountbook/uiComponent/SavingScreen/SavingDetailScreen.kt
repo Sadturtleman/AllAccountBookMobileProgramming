@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
-import com.example.allaccountbook.uiPersistent.BottomNevBar
+import com.example.allaccountbook.uiPersistent.BottomNavBar
 
 @Preview(showBackground = true)
 @Composable
@@ -139,7 +139,11 @@ fun SavingDetailScreen(navController: NavController) {
             }
         }
         Spacer(modifier = Modifier.weight(1f))
-        BottomNevBar()
+        BottomNavBar(
+            onHomeNavigate = { navController.navigate("home") },
+            onDateNavigate = { navController.navigate("date") },
+            onMapNavigate = { navController.navigate("map") }
+        )
     }
 }
 

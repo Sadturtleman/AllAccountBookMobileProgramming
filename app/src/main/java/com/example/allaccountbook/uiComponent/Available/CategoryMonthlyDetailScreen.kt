@@ -13,7 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.allaccountbook.uiPersistent.BottomNevBar
+import com.example.allaccountbook.uiPersistent.BottomNavBar
 import com.example.allaccountbook.uiPersistent.CustomDatePickerDialog
 
 @Preview(showBackground = true)
@@ -108,6 +108,10 @@ fun CategoryMonthlyDetailScreen(navController: NavController) {
             }
         }
         Spacer(modifier = Modifier.weight(1f))
-        BottomNevBar()
+        BottomNavBar(
+            onHomeNavigate = { navController.navigate("home") },
+            onDateNavigate = { navController.navigate("date") },
+            onMapNavigate = { navController.navigate("map") }
+        )
     }
 }

@@ -16,7 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.allaccountbook.uiPersistent.BottomNevBar
+import com.example.allaccountbook.uiPersistent.BottomNavBar
 import com.example.allaccountbook.uiPersistent.CustomDatePickerDialog
 
 data class MonthlyCategoryInfo(
@@ -152,7 +152,11 @@ fun AvailableDetailScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(8.dp))
         Text("전체 남은 금액: ${totalRemaining}원", style = MaterialTheme.typography.bodyLarge)
         Spacer(modifier = Modifier.weight(1f))
-        BottomNevBar()
+        BottomNavBar(
+            onHomeNavigate = { navController.navigate("home") },
+            onDateNavigate = { navController.navigate("date") },
+            onMapNavigate = { navController.navigate("map") }
+        )
     }
 
 }

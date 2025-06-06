@@ -19,17 +19,19 @@ import com.example.allaccountbook.database.model.getAmount
 import com.example.allaccountbook.database.model.getCategory
 import com.example.allaccountbook.database.model.getDate
 import com.example.allaccountbook.database.model.getName
-import com.example.allaccountbook.uiPersistent.BottomNevBar
 import com.example.allaccountbook.uiPersistent.formatWithCommas
 import com.example.allaccountbook.viewmodel.view.TransactionViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 import androidx.compose.foundation.lazy.items
+import androidx.navigation.NavController
+import com.example.allaccountbook.uiPersistent.BottomNavBar
 
 @Composable
 fun DailySpendingDetailScreen(
     selectedDate: String,
-    viewModel: TransactionViewModel = hiltViewModel()
+    viewModel: TransactionViewModel = hiltViewModel(),
+    navController: NavController
 ) {
     val allFilters = TransactionCategory.entries.map { it.label }
     val selectedFilters = remember { mutableStateListOf<String>() }
@@ -118,12 +120,16 @@ fun DailySpendingDetailScreen(
             }
         }
 
-        BottomNevBar()
+        BottomNavBar(
+            onHomeNavigate = { navController.navigate("home") },
+            onDateNavigate = { navController.navigate("date") },
+            onMapNavigate = { navController.navigate("map") }
+        )
     }
 }
 
-@Preview
-@Composable
-private fun DailySpendingDetailScreenPrev() {
-    DailySpendingDetailScreen("2025년 6월 2일")
-}
+//@Preview
+//@Composable
+//private fun DailySpendingDetailScreenPrev() {
+//    DailySpendingDetailScreen("2025년 6월 2일")
+//}

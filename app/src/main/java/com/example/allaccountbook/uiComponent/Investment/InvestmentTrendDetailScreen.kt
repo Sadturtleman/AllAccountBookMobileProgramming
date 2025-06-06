@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.allaccountbook.uiPersistent.BottomNevBar
+import com.example.allaccountbook.uiPersistent.BottomNavBar
 
 @Composable
 fun InvestmentTrendDetailScreen(navController: NavController) {
@@ -47,6 +47,10 @@ fun InvestmentTrendDetailScreen(navController: NavController) {
         }
 
         Spacer(modifier = Modifier.weight(1f))
-        BottomNevBar()
+        BottomNavBar(
+            onHomeNavigate = { navController.navigate("home") },
+            onDateNavigate = { navController.navigate("date") },
+            onMapNavigate = { navController.navigate("map") }
+        )
     }
 }

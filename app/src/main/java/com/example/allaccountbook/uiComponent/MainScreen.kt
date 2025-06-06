@@ -4,11 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DatePicker
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,12 +15,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.allaccountbook.uiPersistent.BottomNevBar
+import com.example.allaccountbook.uiPersistent.BottomNavBar
 import com.example.allaccountbook.uiPersistent.CustomDatePickerDialog
+import com.example.allaccountbook.uiPersistent.formatWithCommas
 import com.example.allaccountbook.uiPersistent.showDate
-import java.text.DecimalFormat
-import java.text.SimpleDateFormat
-import java.util.*
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -154,7 +149,11 @@ fun MainScreen(navController: NavController) {
             }
         }
 
-        BottomNevBar()
+        BottomNavBar(
+            onHomeNavigate = { navController.navigate("home") },
+            onDateNavigate = { navController.navigate("date") },
+            onMapNavigate = { navController.navigate("map") }
+        )
     }
 }
 
@@ -173,11 +172,6 @@ fun InfoRow(
         Text(label, fontSize = fontsize.sp, fontWeight = FontWeight.SemiBold)
         Text(value, fontSize = fontsize.sp)
     }
-}
-
-fun formatWithCommas(amount: Int): String {
-    val formatter = DecimalFormat("#,###")
-    return formatter.format(amount)
 }
 
 @Preview

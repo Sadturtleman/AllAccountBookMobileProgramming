@@ -14,11 +14,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.allaccountbook.database.model.getAmount
 import com.example.allaccountbook.database.model.getDate
 import com.example.allaccountbook.database.model.getCategory
 import com.example.allaccountbook.database.model.TransactionCategory
-import com.example.allaccountbook.uiPersistent.BottomNevBar
+import com.example.allaccountbook.uiPersistent.BottomNavBar
 import com.example.allaccountbook.uiPersistent.formatWithCommas
 import com.example.allaccountbook.uiPersistent.showDate
 import java.text.SimpleDateFormat
@@ -32,7 +34,8 @@ import com.example.allaccountbook.viewmodel.view.TransactionViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShowDailyScreen(
-    viewModel: TransactionViewModel = hiltViewModel()
+    viewModel: TransactionViewModel = hiltViewModel(),
+    navController:NavController
 ) {
     var selectedMonth by remember { mutableStateOf("2025년 05월") }
     var showDateDialog by remember { mutableStateOf(false) }
@@ -177,14 +180,14 @@ fun ShowDailyScreen(
                                     Spacer(Modifier.height(4.dp))
                                     if (totalExpense > 0) {
                                         Text(
-                                            text = "지출: ${formatWithCommas(totalExpense)}원",
+                                            text = "${formatWithCommas(totalExpense)}원",
                                             fontSize = 12.sp,
                                             color = Color.Red
                                         )
                                     }
                                     if (totalIncome > 0) {
                                         Text(
-                                            text = "수입: ${formatWithCommas(totalIncome)}원",
+                                            text = "${formatWithCommas(totalIncome)}원",
                                             fontSize = 12.sp,
                                             color = Color.Blue
                                         )
@@ -198,7 +201,11 @@ fun ShowDailyScreen(
 
         }
 
-        BottomNevBar()
+        BottomNavBar(
+            onHomeNavigate = { navController.navigate("home") },
+            onDateNavigate = { navController.navigate("date") },
+            onMapNavigate = { navController.navigate("map") }
+        )
     }
 }
 
@@ -220,5 +227,8 @@ fun buildCalendarGrid(startDayOfWeek: Int, totalDays: Int): List<List<Int?>> {
 @Preview
 @Composable
 fun ShowDailyScreenPreview() {
-    ShowDailyScreen()
+//    var navController : NavController = rememberNavController()
+//    ShowDailyScreen(
+//        navController = navController
+//    )
 }

@@ -9,10 +9,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.allaccountbook.NavGraph.LoginNavGraph
+import com.example.allaccountbook.NavGraph.StartScreen
 import com.example.allaccountbook.ui.theme.AllAccountBookTheme
-import com.example.allaccountbook.uiComponent.DailySpendingDetailScreen
-import com.example.allaccountbook.uiComponent.LendBorrowListScreen
-import com.example.allaccountbook.uiComponent.ShowDailyScreen
+import com.example.allaccountbook.uiComponent.Login.LoginPage
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.HiltAndroidApp
 
@@ -25,7 +25,8 @@ class MainActivity : ComponentActivity() {
             AllAccountBookTheme {
                 //LendBorrowListScreen("2025년 5월")
                 //ShowDailyScreen
-                DailySpendingDetailScreen("2025년 5월 20일")
+//                LoginPage()
+                StartScreen()
             }
         }
     }
