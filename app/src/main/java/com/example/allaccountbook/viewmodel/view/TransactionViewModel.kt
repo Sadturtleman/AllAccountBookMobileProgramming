@@ -118,6 +118,14 @@ class TransactionViewModel @Inject constructor(
         return repository.getAllUsedCategories()
     }
 
+    suspend fun addExpense(expense: ExpenseEntity) {
+        repository.insertDetail(TransactionDetail.Expense(expense))
+        loadAllTransactions()
+    }
 
+    suspend fun addIncome(income: IncomeEntity) {
+        repository.insertDetail(TransactionDetail.Income(income))
+        loadAllTransactions()
+    }
 
 }
