@@ -142,7 +142,9 @@ fun MainScreen(navController: NavController) {
             }
 
             Button(
-                onClick = { /* 추가하기 */ },
+                onClick = {
+                    navController.navigate("addBorrow") 
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("+추가하기")
