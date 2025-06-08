@@ -5,6 +5,7 @@ import com.example.allaccountbook.database.dao.IncomeDAO
 import com.example.allaccountbook.database.dao.SavingDAO
 import com.example.allaccountbook.database.dao.TransactionDAO
 import com.example.allaccountbook.database.entity.TransactionEntity
+import com.example.allaccountbook.database.model.TransactionCategory
 import com.example.allaccountbook.database.model.TransactionDetail
 import com.example.allaccountbook.database.model.TransactionType
 import javax.inject.Inject
@@ -69,6 +70,18 @@ class TransactionRepository @Inject constructor(
         }
     }
 
+    suspend fun getAllUsedCategories(): List<String> {
+        val incomeCats = incomeDAO.getAllIncomeCategories()
+        val expenseCats = expenseDAO.getAllExpenseCategories()
+        return (incomeCats + expenseCats).distinct()
 
+//        return all.mapNotNull { catName ->
+//            try {
+//                valueOf(catName)
+//            } catch (e: IllegalArgumentException) {
+//                null // enum에 없는 값은 무시
+//            }
+//        }.toSet()
+    }
 
 }

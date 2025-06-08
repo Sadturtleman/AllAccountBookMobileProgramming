@@ -37,6 +37,16 @@ fun ShowDailyScreen(
     viewModel: TransactionViewModel = hiltViewModel(),
     navController:NavController
 ) {
+    val usedCategories = remember { mutableStateListOf<String>() }
+    val selectedCategories = remember { mutableStateListOf<String>() }
+
+    LaunchedEffect(Unit) {
+        val loaded = viewModel.getAllCategories()
+        usedCategories.clear()
+        usedCategories.addAll(loaded)
+    }
+
+
     var selectedMonth by remember { mutableStateOf("2025년 05월") }
     var showDateDialog by remember { mutableStateOf(false) }
     val dateFormatter = DateTimeFormatter.ofPattern("yyyy년 MM월", Locale.KOREA)
@@ -46,11 +56,11 @@ fun ShowDailyScreen(
     val startDayOfWeek = parsedDate.dayOfWeek.value % 7
 
     val transactions by viewModel.transactions.collectAsState()
-    val selectedCategories = remember { mutableStateListOf<TransactionCategory>() }
 
     val filteredData = transactions.filter { detail ->
         val date = LocalDate.parse(detail.getDate())
-        val category = TransactionCategory.entries.find { it.label == detail.getCategory() }
+        val category = detail.getCategory()
+        (selectedCategories.isEmpty() || category in selectedCategories)
         date.year == parsedDate.year &&
                 date.month == parsedDate.month &&
                 (selectedCategories.isEmpty() || category in selectedCategories)
@@ -113,7 +123,7 @@ fun ShowDailyScreen(
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                TransactionCategory.entries.forEach { category ->
+                usedCategories.forEach { category ->
                     FilterChip(
                         selected = selectedCategories.contains(category),
                         onClick = {
@@ -123,7 +133,7 @@ fun ShowDailyScreen(
                                 selectedCategories.add(category)
                             }
                         },
-                        label = { Text(category.label) }
+                        label = { Text(category) }
                     )
                 }
             }

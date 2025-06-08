@@ -21,4 +21,8 @@ interface IncomeDAO {
 
     @Query("SELECT * FROM `Income` WHERE `Income`.transactionId = :id")
     suspend fun getByTransactionId(id : Int): IncomeEntity?
+
+    @Query("SELECT DISTINCT category FROM Income")
+    suspend fun getAllIncomeCategories(): List<String>
+
 }

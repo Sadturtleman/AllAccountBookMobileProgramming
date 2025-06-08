@@ -21,4 +21,8 @@ interface ExpenseDAO {
 
     @Query("SELECT * FROM `Expense` WHERE `Expense`.transactionId = :id")
     suspend fun getByTransactionId(id : Int): ExpenseEntity?
+
+    @Query("SELECT DISTINCT category FROM Expense")
+    suspend fun getAllExpenseCategories(): List<String>
+
 }

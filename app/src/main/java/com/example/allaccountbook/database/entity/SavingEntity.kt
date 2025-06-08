@@ -32,5 +32,5 @@ data class SavingEntity (
     var price : Int,
     var name : String,
     var percent : Float,
-    var category: TransactionCategory
+    var category: String
 )

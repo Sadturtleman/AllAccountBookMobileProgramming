@@ -30,5 +30,5 @@ data class IncomeEntity(
     var price : Int,
     var name : String,
     var date : Date,
-    var category: TransactionCategory
+    var category: String
 )

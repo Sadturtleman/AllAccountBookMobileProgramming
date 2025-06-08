@@ -38,7 +38,7 @@ fun TransactionDetail.getName(): String = when (this) {
 }
 
 fun TransactionDetail.getCategory(): String = when (this) {
-    is TransactionDetail.Expense -> this.data.category.label
-    is TransactionDetail.Income -> this.data.category.label
-    is TransactionDetail.Saving -> this.data.category.label
+    is TransactionDetail.Expense -> this.data.category
+    is TransactionDetail.Income -> this.data.category
+    is TransactionDetail.Saving -> this.data.category
 }

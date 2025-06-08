@@ -33,13 +33,21 @@ fun DailySpendingDetailScreen(
     viewModel: TransactionViewModel = hiltViewModel(),
     navController: NavController
 ) {
-    val allFilters = TransactionCategory.entries.map { it.label }
+    val allFilters = remember { mutableStateListOf<String>() }
+
+    LaunchedEffect(Unit) {
+        val categories = viewModel.getAllCategories()
+        allFilters.clear()
+        allFilters.addAll(categories)
+    }
+
     val selectedFilters = remember { mutableStateListOf<String>() }
 
     var spendings by remember { mutableStateOf<List<TransactionDetail>>(emptyList()) }
 
     LaunchedEffect(selectedDate) {
         spendings = viewModel.getTransactionsByDate(selectedDate)
+
     }
 
     val parsedDate = SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREA).parse(selectedDate)

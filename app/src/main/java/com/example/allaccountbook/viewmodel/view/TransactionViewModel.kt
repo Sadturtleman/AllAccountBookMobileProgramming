@@ -9,6 +9,8 @@ import com.example.allaccountbook.database.entity.SavingEntity
 import com.example.allaccountbook.database.model.TransactionCategory
 import com.example.allaccountbook.database.model.TransactionDetail
 import com.example.allaccountbook.database.model.getDate
+import com.example.allaccountbook.database.repository.ExpenseRepository
+import com.example.allaccountbook.database.repository.IncomeRepository
 import com.example.allaccountbook.database.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,10 +46,10 @@ class TransactionViewModel @Inject constructor(
                 TransactionDetail.Expense(
                     ExpenseEntity(
                         transactionId = 1,
-                        price = 12000,
+                        price = 29000,
                         name = "스타벅스",
                         date = Calendar.getInstance().apply { set(2025, 4, 5) }.time,
-                        category = TransactionCategory.FOOD
+                        category = "음식"
                     )
                 ),
                 TransactionDetail.Expense(
@@ -56,7 +58,7 @@ class TransactionViewModel @Inject constructor(
                         price = 45000,
                         name = "홈플러스",
                         date = Calendar.getInstance().apply { set(2025, 4, 12) }.time,
-                        category = TransactionCategory.SHOPPING
+                        category = "쇼핑"
                     )
                 ),
                 TransactionDetail.Expense(
@@ -65,7 +67,7 @@ class TransactionViewModel @Inject constructor(
                         price = 3000,
                         name = "버스 요금",
                         date = Calendar.getInstance().apply { set(2025, 4, 20) }.time,
-                        category = TransactionCategory.TRANSPORT
+                        category = "교통 수단"
                     )
                 ),
                 TransactionDetail.Income(
@@ -74,7 +76,7 @@ class TransactionViewModel @Inject constructor(
                         price = 2000000,
                         name = "급여",
                         date = Calendar.getInstance().apply { set(2025, 4, 25) }.time,
-                        category = TransactionCategory.ETC
+                        category = "기타"
                     )
                 ),
                 TransactionDetail.Saving(
@@ -84,7 +86,7 @@ class TransactionViewModel @Inject constructor(
                         name = "예금",
                         startDate = Calendar.getInstance().apply { set(2025, 4, 1) }.time,
                         endDate = Calendar.getInstance().apply { set(2026, 4, 1) }.time,
-                        category = TransactionCategory.ETC,
+                        category = "기타",
                         savingId = 1,
                         percent = 0.3F
                     )
@@ -111,4 +113,11 @@ class TransactionViewModel @Inject constructor(
             it.getDate() == formatted
         }
     }
+
+    suspend fun getAllCategories():List<String>{
+        return repository.getAllUsedCategories()
+    }
+
+
+
 }
