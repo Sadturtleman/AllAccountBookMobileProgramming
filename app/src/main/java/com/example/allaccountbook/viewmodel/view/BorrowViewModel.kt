@@ -56,6 +56,7 @@ class BorrowViewModel @Inject constructor(
     fun addBorrow(borrow: BorrowMoney){
         viewModelScope.launch {
             repository.insert(borrow.toEntity())
+            loadAllBorrow()
         }
     }
 
