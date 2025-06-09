@@ -31,7 +31,7 @@ import com.example.allaccountbook.uiPersistent.formatWithCommas
 fun LendBorrowListScreen(
     selectedDate: String,
     viewModel: BorrowViewModel = hiltViewModel(),
-    onAddClick: () -> Unit = {}, // 👈 새로 추가할 항목 입력 화면 이동용 콜백(AddBorrowItemScreen으로 이동 필요)
+//    onAddClick: () -> Unit = {}, // 👈 새로 추가할 항목 입력 화면 이동용 콜백(AddBorrowItemScreen으로 이동 필요)
     navController : NavController
 ) {
     val typeOptions = listOf("빌려준 목록", "빌린 목록")
@@ -52,7 +52,9 @@ fun LendBorrowListScreen(
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddClick) {
+            FloatingActionButton(onClick = {
+                navController.navigate("addBorrow")
+            }) {
                 Text("+") // 혹은 Icon(Icons.Default.Add, contentDescription = null)
             }
         },
