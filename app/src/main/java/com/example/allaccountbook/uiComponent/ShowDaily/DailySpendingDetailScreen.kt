@@ -1,4 +1,4 @@
-package com.example.allaccountbook.uiComponent
+package com.example.allaccountbook.uiComponent.ShowDaily
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -9,11 +9,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.allaccountbook.database.model.TransactionCategory
 import com.example.allaccountbook.database.model.TransactionDetail
 import com.example.allaccountbook.database.model.getAmount
 import com.example.allaccountbook.database.model.getCategory

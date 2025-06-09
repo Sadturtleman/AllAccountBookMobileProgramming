@@ -109,13 +109,13 @@ fun MainScreen(navController: NavController) {
                 InfoRow(
                     label = "빌린 전체 금액",
                     value = formatWithCommas(getTotalLentAmount),
-                    modifier = Modifier.clickable { /* 화면 이동 */ }
+                    modifier = Modifier.clickable { navController.navigate("lendBorrowList/${selectedDate}") }
                 )
 
                 InfoRow(
                     label = "빌려준 금액",
                     value = formatWithCommas(getTotalBorrowedAmount),
-                    modifier = Modifier.clickable { /* 화면 이동 */ }
+                    modifier = Modifier.clickable { navController.navigate("lendBorrowList/${selectedDate}") }
                 )
             }
 

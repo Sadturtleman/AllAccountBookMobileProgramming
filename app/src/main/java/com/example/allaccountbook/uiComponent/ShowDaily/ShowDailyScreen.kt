@@ -1,5 +1,4 @@
-
-package com.example.allaccountbook.uiComponent
+package com.example.allaccountbook.uiComponent.ShowDaily
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

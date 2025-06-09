@@ -3,7 +3,6 @@ package com.example.allaccountbook.NavGraph
 
 import MainScreen
 import android.annotation.SuppressLint
-import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
@@ -18,8 +17,8 @@ import com.example.allaccountbook.uiComponent.Login.LoginPage
 import com.example.allaccountbook.uiComponent.Login.WrongLoginPage
 import com.example.allaccountbook.uiComponent.SavingScreen.SavingDetailScreen
 import com.example.allaccountbook.uiComponent.SavingScreen.SavingAmountDetailScreen
-import com.example.allaccountbook.uiComponent.DailySpendingDetailScreen
-import com.example.allaccountbook.uiComponent.LendBorrowListScreen
+import com.example.allaccountbook.uiComponent.ShowDaily.DailySpendingDetailScreen
+import com.example.allaccountbook.uiComponent.LendBorrow.LendBorrowListScreen
 
 @SuppressLint("ComposableDestinationInComposeScope")
 fun NavGraphBuilder.LoginNavGraph(navController: NavHostController) {
@@ -57,6 +56,13 @@ fun NavGraphBuilder.LoginNavGraph(navController: NavHostController) {
 
     composable("addBorrow") {
         AddBorrowItemScreen(navController)
+    }
+
+    composable("lendBorrowList/{selectedDate}") {
+        val date = it.arguments?.getString("selectedDate") ?: ""
+
+        val displayDate = convertToKoreanDate(date)
+        LendBorrowListScreen(selectedDate = displayDate, navController = navController)
     }
 
    

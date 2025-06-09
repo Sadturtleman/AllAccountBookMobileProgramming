@@ -1,4 +1,4 @@
-package com.example.allaccountbook.uiComponent
+package com.example.allaccountbook.uiComponent.LendBorrow
 
 
 import androidx.compose.foundation.layout.*
