@@ -1,6 +1,8 @@
+
 package com.example.allaccountbook.uiComponent
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,27 +17,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.allaccountbook.database.model.getAmount
 import com.example.allaccountbook.database.model.getDate
 import com.example.allaccountbook.database.model.getCategory
-import com.example.allaccountbook.database.model.TransactionCategory
 import com.example.allaccountbook.uiPersistent.BottomNavBar
 import com.example.allaccountbook.uiPersistent.formatWithCommas
 import com.example.allaccountbook.uiPersistent.showDate
+import com.example.allaccountbook.viewmodel.view.BorrowViewModel
+import com.example.allaccountbook.viewmodel.view.TransactionViewModel
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
-import com.example.allaccountbook.viewmodel.view.TransactionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShowDailyScreen(
     viewModel: TransactionViewModel = hiltViewModel(),
-    navController:NavController
+    borrowViewModel: BorrowViewModel = hiltViewModel(),
+    navController: NavController
 ) {
     val usedCategories = remember { mutableStateListOf<String>() }
     val selectedCategories = remember { mutableStateListOf<String>() }
@@ -46,7 +48,6 @@ fun ShowDailyScreen(
         usedCategories.addAll(loaded)
     }
 
-
     var selectedMonth by remember { mutableStateOf("2025년 05월") }
     var showDateDialog by remember { mutableStateOf(false) }
     val dateFormatter = DateTimeFormatter.ofPattern("yyyy년 MM월", Locale.KOREA)
@@ -56,6 +57,7 @@ fun ShowDailyScreen(
     val startDayOfWeek = parsedDate.dayOfWeek.value % 7
 
     val transactions by viewModel.transactions.collectAsState()
+    val borrowList by borrowViewModel.borrowList.collectAsState()
 
     val filteredData = transactions.filter { detail ->
         val date = LocalDate.parse(detail.getDate())
@@ -67,6 +69,10 @@ fun ShowDailyScreen(
     }
 
     val calendarRows = buildCalendarGrid(startDayOfWeek, daysInMonth)
+
+
+    var showChoiceDialog by remember { mutableStateOf(false) }
+    var clickedDate by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -169,7 +175,41 @@ fun ShowDailyScreen(
                         Box(
                             modifier = Modifier
                                 .size(72.dp)
-                                .background(Color(0xFFF5F5F5), MaterialTheme.shapes.small),
+                                .background(Color(0xFFF5F5F5), MaterialTheme.shapes.small)
+                                .let { mod ->
+                                    if (day != null) {
+                                        mod.clickable {
+                                            val dayStr = String.format(Locale.KOREA, "%02d", day)
+                                            val fullDate = "${parsedDate.year}-${parsedDate.monthValue.toString().padStart(2, '0')}-$dayStr"
+
+                                            val dailyTransactions = filteredData.filter { it.getDate() == fullDate }
+                                            val totalExpense = dailyTransactions
+                                                .filter { it.type.name == "EXPENSE" }
+                                                .sumOf { it.getAmount() }
+                                            val totalIncome = dailyTransactions
+                                                .filter { it.type.name == "INCOME" }
+                                                .sumOf { it.getAmount() }
+
+                                            val dailyBorrows = borrowList.filter {
+                                                SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(it.date) == fullDate
+                                            }
+                                            val totalBorrow = dailyBorrows.filter { it.type.name == "BORROW" }.sumOf { it.price }
+                                            val totalBorrowed = dailyBorrows.filter { it.type.name == "BORROWED" }.sumOf { it.price }
+
+                                            val hasSpend = totalExpense > 0 || totalIncome > 0
+                                            val hasBorrow = totalBorrow > 0 || totalBorrowed > 0
+
+                                            when {
+                                                hasSpend && hasBorrow -> {
+                                                    clickedDate = fullDate
+                                                    showChoiceDialog = true
+                                                }
+                                                hasSpend -> navController.navigate("dailyDetail/$fullDate")
+                                                hasBorrow -> navController.navigate("lendBorrowList/$fullDate")
+                                            }
+                                        }
+                                    } else mod
+                                },
                             contentAlignment = Alignment.TopCenter
                         ) {
                             if (day != null) {
@@ -184,6 +224,12 @@ fun ShowDailyScreen(
                                 val totalIncome = dailyTransactions
                                     .filter { it.type.name == "INCOME" }
                                     .sumOf { it.getAmount() }
+
+                                val dailyBorrows = borrowList.filter {
+                                    SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(it.date) == fullDate
+                                }
+                                val totalBorrow = dailyBorrows.filter { it.type.name == "BORROW" }.sumOf { it.price }
+                                val totalBorrowed = dailyBorrows.filter { it.type.name == "BORROWED" }.sumOf { it.price }
 
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text("$day", fontSize = 13.sp, fontWeight = FontWeight.Bold)
@@ -202,13 +248,26 @@ fun ShowDailyScreen(
                                             color = Color.Blue
                                         )
                                     }
+                                    if (totalBorrow > 0) {
+                                        Text(
+                                            text = "빌림: ${formatWithCommas(totalBorrow)}원",
+                                            fontSize = 12.sp,
+                                            color = Color(0xFF6C3483)
+                                        )
+                                    }
+                                    if (totalBorrowed > 0) {
+                                        Text(
+                                            text = "빌려준: ${formatWithCommas(totalBorrowed)}원",
+                                            fontSize = 12.sp,
+                                            color = Color(0xFF2874A6)
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-
         }
 
         BottomNavBar(
@@ -217,8 +276,28 @@ fun ShowDailyScreen(
             onMapNavigate = { navController.navigate("map") }
         )
     }
-}
 
+
+    if (showChoiceDialog) {
+        AlertDialog(
+            onDismissRequest = { showChoiceDialog = false },
+            title = { Text("어떤 내역을 확인하시겠어요?") },
+            text = { Text("이 날짜는 수입/지출 내역과 빌림/빌려준 내역이 모두 있습니다.") },
+            confirmButton = {
+                Button(onClick = {
+                    navController.navigate("dailyDetail/$clickedDate")
+                    showChoiceDialog = false
+                }) { Text("수입/지출 보기") }
+            },
+            dismissButton = {
+                Button(onClick = {
+                    navController.navigate("lendBorrowList/$clickedDate")
+                    showChoiceDialog = false
+                }) { Text("빌림/빌려준 보기") }
+            }
+        )
+    }
+}
 
 fun buildCalendarGrid(startDayOfWeek: Int, totalDays: Int): List<List<Int?>> {
     val grid = mutableListOf<List<Int?>>()
@@ -233,6 +312,7 @@ fun buildCalendarGrid(startDayOfWeek: Int, totalDays: Int): List<List<Int?>> {
     }
     return grid
 }
+
 
 @Preview
 @Composable
