@@ -19,6 +19,7 @@ import com.example.allaccountbook.uiComponent.SavingScreen.SavingDetailScreen
 import com.example.allaccountbook.uiComponent.SavingScreen.SavingAmountDetailScreen
 import com.example.allaccountbook.uiComponent.ShowDaily.DailySpendingDetailScreen
 import com.example.allaccountbook.uiComponent.LendBorrow.LendBorrowListScreen
+import com.example.allaccountbook.uiComponent.PhoneRegisterScreen
 
 @SuppressLint("ComposableDestinationInComposeScope")
 fun NavGraphBuilder.LoginNavGraph(navController: NavHostController) {
@@ -54,9 +55,7 @@ fun NavGraphBuilder.LoginNavGraph(navController: NavHostController) {
     // 저축 금액 "자세히 보기" 페이지
     composable("savingAmountDetail") { SavingAmountDetailScreen(navController) }
 
-    composable("addBorrow") {
-        AddBorrowItemScreen(navController)
-    }
+    composable("addBorrow") { AddBorrowItemScreen(navController) }
 
     composable("lendBorrowList/{selectedDate}") {
         val date = it.arguments?.getString("selectedDate") ?: ""
@@ -68,7 +67,6 @@ fun NavGraphBuilder.LoginNavGraph(navController: NavHostController) {
    
     composable("dailyDetail/{date}") { backStackEntry ->
         val date = backStackEntry.arguments?.getString("date") ?: ""
-        
         val displayDate = convertToKoreanDate(date)
         DailySpendingDetailScreen(selectedDate = displayDate, navController = navController)
     }
@@ -79,6 +77,7 @@ fun NavGraphBuilder.LoginNavGraph(navController: NavHostController) {
         val displayDate = convertToKoreanDate(date)
         LendBorrowListScreen(selectedDate = displayDate, navController = navController)
     }
+    composable("phoneRegister") { PhoneRegisterScreen() }
 }
 
 
