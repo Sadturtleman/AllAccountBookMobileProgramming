@@ -83,5 +83,8 @@ class TransactionRepository @Inject constructor(
 //            }
 //        }.toSet()
     }
+    suspend fun insertAndGetId(transaction: TransactionEntity): Long {
+        return transactionDAO.InsertTransaction(transaction)
+    }
 
 }
