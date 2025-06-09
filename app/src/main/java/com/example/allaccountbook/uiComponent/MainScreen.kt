@@ -141,13 +141,26 @@ fun MainScreen(navController: NavController) {
                 }
             }
 
-            Button(
-                onClick = {
-                    navController.navigate("addBorrow") 
-                },
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("+추가하기")
+                Button(
+                    onClick = {
+                        navController.navigate("addBorrow")
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("+추가하기")
+                }
+                Button(
+                    onClick = {
+                        navController.navigate("phoneRegister")
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("전화번호 등록")
+                }
             }
         }
 
