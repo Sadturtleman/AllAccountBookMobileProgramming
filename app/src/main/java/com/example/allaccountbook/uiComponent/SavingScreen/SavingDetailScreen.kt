@@ -15,6 +15,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,8 +27,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
+import com.example.allaccountbook.database.model.TransactionDetail
 import com.example.allaccountbook.uiPersistent.BottomNavBar
+import com.example.allaccountbook.viewmodel.view.TransactionViewModel
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Preview(showBackground = true)
 @Composable
@@ -41,17 +47,24 @@ data class SavingLog(
 )
 
 @Composable
-fun SavingDetailScreen(navController: NavController) {
+fun SavingDetailScreen(navController: NavController, viewmodel : TransactionViewModel = hiltViewModel()) {
+    val allList by viewmodel.transactions.collectAsState()
+
+    val savingList = allList.filterIsInstance<TransactionDetail.Saving>()
+
     val goal = SavingGoal(
         name = "여행",
         goalAmount = 100000,
         currentAmount = 60000,
         deadline = "2025-12-31"
     )
-    val logs = listOf(
-        SavingLog("5월 1일", 30000),
-        SavingLog("5월 15일", 30000)
-    )
+    val logs = savingList.map{
+        SavingLog(
+            name = SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREA).format(it.data.startDate),
+            amount = it.data.price
+        )
+    }
+
     val achievementRate = goal.achievementRate
 
     var showGoalDialog by remember { mutableStateOf(false) }

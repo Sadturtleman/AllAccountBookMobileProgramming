@@ -44,43 +44,51 @@ class TransactionViewModel @Inject constructor(
         viewModelScope.launch {
             val mockData = listOf(
                 TransactionDetail.Expense(
-                    ExpenseEntity(
+                    data = ExpenseEntity(
                         transactionId = 1,
                         price = 29000,
                         name = "스타벅스",
                         date = Calendar.getInstance().apply { set(2025, 4, 5) }.time,
                         category = "음식"
-                    )
+                    ),
+                    latitude = null,
+                    longitude = null
                 ),
                 TransactionDetail.Expense(
-                    ExpenseEntity(
+                    data = ExpenseEntity(
                         transactionId = 2,
                         price = 45000,
                         name = "홈플러스",
                         date = Calendar.getInstance().apply { set(2025, 4, 12) }.time,
                         category = "쇼핑"
-                    )
+                    ),
+                    latitude = null,
+                    longitude = null
                 ),
                 TransactionDetail.Expense(
-                    ExpenseEntity(
+                    data = ExpenseEntity(
                         transactionId = 3,
                         price = 3000,
                         name = "버스 요금",
                         date = Calendar.getInstance().apply { set(2025, 4, 20) }.time,
                         category = "교통 수단"
-                    )
+                    ),
+                    latitude = null,
+                    longitude = null
                 ),
                 TransactionDetail.Income(
-                    IncomeEntity(
+                    data = IncomeEntity(
                         transactionId = 4,
                         price = 2000000,
                         name = "급여",
                         date = Calendar.getInstance().apply { set(2025, 4, 25) }.time,
                         category = "기타"
-                    )
+                    ),
+                    latitude = null,
+                    longitude = null
                 ),
                 TransactionDetail.Saving(
-                    SavingEntity(
+                    data = SavingEntity(
                         transactionId = 5,
                         price = 500000,
                         name = "예금",
@@ -89,7 +97,9 @@ class TransactionViewModel @Inject constructor(
                         category = "기타",
                         savingId = 1,
                         percent = 0.3F
-                    )
+                    ),
+                    latitude = null,
+                    longitude = null
                 )
             )
 
@@ -119,12 +129,12 @@ class TransactionViewModel @Inject constructor(
     }
 
     suspend fun addExpense(expense: ExpenseEntity) {
-        repository.insertDetail(TransactionDetail.Expense(expense))
+        repository.insertDetail(TransactionDetail.Expense(expense, null, null))
         loadAllTransactions()
     }
 
     suspend fun addIncome(income: IncomeEntity) {
-        repository.insertDetail(TransactionDetail.Income(income))
+        repository.insertDetail(TransactionDetail.Income(income, null, null))
         loadAllTransactions()
     }
 

@@ -8,6 +8,7 @@ import com.example.allaccountbook.database.entity.TransactionEntity
 import com.example.allaccountbook.database.model.TransactionCategory
 import com.example.allaccountbook.database.model.TransactionDetail
 import com.example.allaccountbook.database.model.TransactionType
+import com.example.allaccountbook.database.model.getLocation
 import javax.inject.Inject
 
 class TransactionRepository @Inject constructor(
@@ -33,16 +34,17 @@ class TransactionRepository @Inject constructor(
 
         return transactions.mapNotNull {
             transaction ->
+            val (lat, lng) = transaction.getLocation()
             when(transaction.transactionType){
                 TransactionType.SAVING -> savingDAO.getByTransactionId(transaction.transactionId)?.let{
-                    TransactionDetail.Saving(it)
+                    TransactionDetail.Saving(it, lat, lng)
                 }
 
                 TransactionType.INCOME -> incomeDAO.getByTransactionId(transaction.transactionId)?.let {
-                    TransactionDetail.Income(it)
+                    TransactionDetail.Income(it, lat, lng)
                 }
                 TransactionType.EXPENSE -> expenseDAO.getByTransactionId(transaction.transactionId)?.let {
-                    TransactionDetail.Expense(it)
+                    TransactionDetail.Expense(it, lat, lng)
                 }
             }
         }
