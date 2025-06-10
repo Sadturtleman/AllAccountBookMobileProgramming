@@ -3,14 +3,30 @@ package com.example.allaccountbook.database.model
 import com.example.allaccountbook.database.entity.ExpenseEntity
 import com.example.allaccountbook.database.entity.IncomeEntity
 import com.example.allaccountbook.database.entity.SavingEntity
+import com.example.allaccountbook.database.entity.TransactionEntity
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-sealed class TransactionDetail(val type: TransactionType) {
-    data class Saving(val data: SavingEntity) : TransactionDetail(TransactionType.SAVING)
-    data class Expense(val data: ExpenseEntity) : TransactionDetail(TransactionType.EXPENSE)
-    data class Income(val data: IncomeEntity) : TransactionDetail(TransactionType.INCOME)
+sealed class TransactionDetail(
+    val type: TransactionType,
+    open val latitude: Double?,
+    open val longitude: Double?
+) {
+    data class Saving(
+        val data: SavingEntity,
+        override val latitude: Double?, override val longitude: Double?
+    ) : TransactionDetail(TransactionType.SAVING, latitude, longitude)
+
+    data class Expense(
+        val data: ExpenseEntity,
+        override val latitude: Double?, override val longitude: Double?
+    ) : TransactionDetail(TransactionType.EXPENSE, latitude, longitude)
+
+    data class Income(
+        val data: IncomeEntity,
+        override val latitude: Double?, override val longitude: Double?
+    ) : TransactionDetail(TransactionType.INCOME, latitude, longitude)
 }
 
 fun TransactionDetail.getDate(): String = when (this) {
@@ -42,3 +58,6 @@ fun TransactionDetail.getCategory(): String = when (this) {
     is TransactionDetail.Income -> this.data.category
     is TransactionDetail.Saving -> this.data.category
 }
+
+fun TransactionEntity.getLocation(): Pair<Double?, Double?> =
+    latitude to longitude

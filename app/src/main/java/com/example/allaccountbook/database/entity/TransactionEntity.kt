@@ -8,5 +8,7 @@ import com.example.allaccountbook.database.model.TransactionType
 data class TransactionEntity(
     @PrimaryKey(autoGenerate = true)
     val transactionId : Int = 0,
-    var transactionType : TransactionType
+    var transactionType : TransactionType,
+    var latitude :  Double? = null,
+    var longitude : Double? = null
 )
