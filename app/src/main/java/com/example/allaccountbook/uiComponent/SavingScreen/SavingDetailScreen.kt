@@ -42,7 +42,8 @@ fun SavingDetailScreenPreview() {
     SavingDetailScreen(navController)
 }
 data class SavingLog(
-    val name: String,
+    var name: String,
+    val date: String,
     val amount: Int
 )
 
@@ -60,7 +61,8 @@ fun SavingDetailScreen(navController: NavController, viewmodel : TransactionView
     )
     val logs = savingList.map{
         SavingLog(
-            name = SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREA).format(it.data.startDate),
+            name = it.data.name,
+            date = SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREA).format(it.data.startDate),
             amount = it.data.price
         )
     }
@@ -130,6 +132,7 @@ fun SavingDetailScreen(navController: NavController, viewmodel : TransactionView
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text("저축 명", fontWeight = FontWeight.SemiBold)
+            Text("저축 날짜", fontWeight = FontWeight.SemiBold)
             Text("저축 금액", fontWeight = FontWeight.SemiBold)
         }
 
@@ -144,6 +147,7 @@ fun SavingDetailScreen(navController: NavController, viewmodel : TransactionView
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(log.name)
+                    Text(log.date)
                     Text(
                         "${log.amount}원",
                         modifier = Modifier.clickable { showAmountDialog = true }
