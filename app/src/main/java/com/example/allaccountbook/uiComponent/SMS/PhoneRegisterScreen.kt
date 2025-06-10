@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
 
 @Composable
 fun PhoneRegisterScreen() {
@@ -31,7 +32,7 @@ fun PhoneRegisterScreen() {
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                prefs.edit().putString("target_phone", phone).apply()
+                prefs.edit { putString("target_phone", phone) }
                 saved = true
             },
             modifier = Modifier.fillMaxWidth()

@@ -1,7 +1,6 @@
 package com.example.allaccountbook.NavGraph
 
 
-import MainScreen
 import android.annotation.SuppressLint
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -20,7 +19,7 @@ import com.example.allaccountbook.uiComponent.SavingScreen.SavingAmountDetailScr
 import com.example.allaccountbook.uiComponent.ShowDaily.DailySpendingDetailScreen
 import com.example.allaccountbook.uiComponent.LendBorrow.LendBorrowListScreen
 import com.example.allaccountbook.uiComponent.PhoneRegisterScreen
-
+import com.example.allaccountbook.uiComponent.MainScreen
 @SuppressLint("ComposableDestinationInComposeScope")
 fun NavGraphBuilder.LoginNavGraph(navController: NavHostController) {
 

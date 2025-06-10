@@ -26,7 +26,7 @@ object DatabaseModule {
             AccountDB::class.java,
             "AccountDB"
         )
-            .fallbackToDestructiveMigration() // 버전 변경 시 기존 데이터 삭제 (lendBorrowScreen에서 충돌나서 제거)
+            .fallbackToDestructiveMigration(false) // 버전 변경 시 기존 데이터 삭제 (lendBorrowScreen에서 충돌나서 제거)
             .build()
     }
 

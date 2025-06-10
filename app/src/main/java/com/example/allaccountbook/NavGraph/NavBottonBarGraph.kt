@@ -1,6 +1,6 @@
 package com.example.allaccountbook.NavGraph
 
-import MainScreen
+import com.example.allaccountbook.uiComponent.MainScreen
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable

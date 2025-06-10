@@ -12,3 +12,4 @@ buildscript{
         classpath(libs.dagger.hilt.android.gradle.plugin)
     }
 }
+

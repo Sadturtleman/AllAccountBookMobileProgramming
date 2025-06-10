@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -136,7 +137,7 @@ fun AvailableDetailScreen(navController: NavController) {
                         .padding(vertical = 6.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("${item.categoryName}")
+                    Text(item.categoryName)
                     Text("${item.remainingAmount}원")
                     Text(
                         "${item.remainingPercent}%",
@@ -148,7 +149,7 @@ fun AvailableDetailScreen(navController: NavController) {
             }
         }
 
-        Divider(thickness = 1.dp, color = Color.Gray)
+        HorizontalDivider(thickness = 1.dp, color = Color.Gray)
         Spacer(modifier = Modifier.height(8.dp))
         Text("전체 남은 금액: ${totalRemaining}원", style = MaterialTheme.typography.bodyLarge)
         Spacer(modifier = Modifier.weight(1f))
