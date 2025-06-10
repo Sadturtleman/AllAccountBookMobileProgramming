@@ -50,13 +50,11 @@ fun parseSmsMessage(msg: String): SmsParsed? {
         )
     }
 
-
-
     return null
 }
 
 // -> ExpenseEntity
-fun smsParsedToExpenseEntity(parsed: SmsParsed, transactionId: Int = 0, category: String = "기타"): ExpenseEntity {
+fun smsParsedToExpenseEntity(parsed: SmsParsed, transactionId: Int = 0, category: String): ExpenseEntity {
 
     val thisYear = Calendar.getInstance().get(Calendar.YEAR)
     val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.KOREA)
