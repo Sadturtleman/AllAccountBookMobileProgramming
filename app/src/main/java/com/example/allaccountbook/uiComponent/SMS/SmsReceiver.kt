@@ -25,7 +25,7 @@ class SmsReceiver(
             Log.d("SmsReceiver", "문자 메시지 내용: $msgBody, 발신자: $sender")
 
             val parsed = parseSmsMessage(msgBody)
-            if (parsed != null) {
+            if (parsed != null && context != null) {
 
                 CoroutineScope(Dispatchers.IO).launch {
                     val transaction = TransactionEntity(
@@ -34,7 +34,9 @@ class SmsReceiver(
 
                     val transactionId = transactionRepository.insertAndGetId(transaction).toInt()
 
-                    val entity = smsParsedToExpenseEntity(parsed, transactionId = transactionId)
+                    val apiKey = "95889668bdd945a3d78d8ce66b45e8fd"
+                    val category = getKakaoCategoryName(parsed.place, apiKey) ?: "기타"
+                    val entity = smsParsedToExpenseEntity(parsed, transactionId = transactionId, category = category)
                     expenseRepository.insert(entity)
                     Log.d("SmsReceiver", "DB삽입: $entity")
                 }
