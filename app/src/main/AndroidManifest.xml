@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
 
     <application
@@ -18,6 +19,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AllAccountBook"
         >
+        <meta-data
+            android:name="com.kakao.sdk.Appkey"
+            android:value="@string/kakao_app_key"/>
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCuVwqCnDwiS2STAaHzDZN-XPKstWMg41U"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -37,7 +37,6 @@ androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navig
 dagger-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 dagger-hilt-android-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt"}
 dagger-hilt-android-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
-kakao-map = { module = "com.kakao.maps.open:android", version = "2.12.8" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

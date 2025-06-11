@@ -1,5 +1,6 @@
 package com.example.allaccountbook.database.repository
 
+import android.util.Log
 import com.example.allaccountbook.database.dao.ExpenseDAO
 import com.example.allaccountbook.database.dao.IncomeDAO
 import com.example.allaccountbook.database.dao.SavingDAO
@@ -31,7 +32,9 @@ class TransactionRepository @Inject constructor(
 
     suspend fun getAllTransactionWithDetails(): List<TransactionDetail>{
         val transactions = transactionDAO.getAllTransaction()
-
+        transactions.forEach {
+            Log.d("Debug","${it.transactionType}  ${it.transactionId} ${(it.latitude to it.longitude.toString())}")
+        }
         return transactions.mapNotNull {
             transaction ->
             val (lat, lng) = transaction.getLocation()
@@ -53,19 +56,19 @@ class TransactionRepository @Inject constructor(
     suspend fun insertDetail(detail: TransactionDetail) {
         when (detail) {
             is TransactionDetail.Saving -> {
-                val transaction = TransactionEntity(transactionType = TransactionType.SAVING)
+                val transaction = TransactionEntity(transactionType = TransactionType.SAVING, latitude = detail.latitude, longitude = detail.longitude)
                 val transactionId = transactionDAO.InsertTransaction(transaction)
                 savingDAO.InsertSaving(detail.data.copy(transactionId = transactionId.toInt()))
             }
 
             is TransactionDetail.Income -> {
-                val transaction = TransactionEntity(transactionType = TransactionType.INCOME)
+                val transaction = TransactionEntity(transactionType = TransactionType.INCOME, latitude = detail.latitude, longitude = detail.longitude)
                 val transactionId = transactionDAO.InsertTransaction(transaction)
                 incomeDAO.InsertIncome(detail.data.copy(transactionId = transactionId.toInt()))
             }
 
             is TransactionDetail.Expense -> {
-                val transaction = TransactionEntity(transactionType = TransactionType.EXPENSE)
+                val transaction = TransactionEntity(transactionType = TransactionType.EXPENSE, latitude = detail.latitude, longitude = detail.longitude)
                 val transactionId = transactionDAO.InsertTransaction(transaction)
                 expenseDAO.InsertExpense(detail.data.copy(transactionId = transactionId.toInt()))
             }
@@ -87,6 +90,30 @@ class TransactionRepository @Inject constructor(
     }
     suspend fun insertAndGetId(transaction: TransactionEntity): Long {
         return transactionDAO.InsertTransaction(transaction)
+    }
+
+    suspend fun insertExpenseIfNotExists(detail: TransactionDetail.Expense) {
+        val existing = expenseDAO.findSimilarExpense(
+            name = detail.data.name,
+            price = detail.data.price,
+            date = detail.data.date.time // long 비교
+        )
+
+        if (existing != null) {
+            Log.d("TransactionRepo", "중복된 Expense 존재: ${existing.expenseId}, 삽입 생략")
+            return
+        }
+
+        // 중복 없으면 삽입
+        val transactionId = transactionDAO.InsertTransaction(
+            TransactionEntity(
+                transactionType = TransactionType.EXPENSE,
+                latitude = detail.latitude,
+                longitude = detail.longitude
+            )
+        ).toInt()
+
+        expenseDAO.InsertExpense(detail.data.copy(transactionId = transactionId))
     }
 
 }

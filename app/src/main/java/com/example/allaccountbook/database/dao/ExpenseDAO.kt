@@ -25,4 +25,7 @@ interface ExpenseDAO {
     @Query("SELECT DISTINCT category FROM Expense")
     suspend fun getAllExpenseCategories(): List<String>
 
+    @Query("SELECT * FROM Expense WHERE name = :name AND price = :price AND date = :date LIMIT 1")
+    suspend fun findSimilarExpense(name: String, price: Int, date: Long): ExpenseEntity?
+
 }

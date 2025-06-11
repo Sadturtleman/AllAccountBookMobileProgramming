@@ -31,7 +31,7 @@ class TransactionViewModel @Inject constructor(
 
     init {
         loadAllTransactions()
-        insertIfEmpty()
+        //insertIfEmpty()
     }
 
     private fun loadAllTransactions() {
@@ -115,7 +115,9 @@ class TransactionViewModel @Inject constructor(
             }
         }
     }
-
+    fun refresh(){
+        loadAllTransactions()
+    }
     suspend fun getTransactionsByDate(dateString: String): List<TransactionDetail> {
         val parsed = SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREA).parse(dateString)
         val formatted = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(parsed!!)
