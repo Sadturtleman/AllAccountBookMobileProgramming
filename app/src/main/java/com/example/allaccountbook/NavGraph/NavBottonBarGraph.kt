@@ -4,6 +4,7 @@ import com.example.allaccountbook.uiComponent.MainScreen
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import com.example.allaccountbook.map.TransactionMapScreen
 import com.example.allaccountbook.uiComponent.ShowDaily.ShowDailyScreen
 
 fun NavGraphBuilder.NavBottonBarGraph(navController: NavHostController) {
@@ -16,7 +17,7 @@ fun NavGraphBuilder.NavBottonBarGraph(navController: NavHostController) {
         )
     }
     composable("map") {
-        // TODO: map 화면 작성 시 여기에 넣기
+        TransactionMapScreen()
     }
 }
 

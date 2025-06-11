@@ -10,7 +10,7 @@ import com.example.allaccountbook.database.entity.TransactionEntity
 
 @Dao
 interface TransactionDAO {
-    @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
     suspend fun InsertTransaction(entity : TransactionEntity) : Long
 
     @Delete

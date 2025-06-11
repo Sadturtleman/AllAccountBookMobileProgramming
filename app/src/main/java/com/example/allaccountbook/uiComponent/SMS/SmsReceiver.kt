@@ -5,18 +5,17 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Telephony
 import android.util.Log
-import com.example.allaccountbook.database.repository.TransactionRepository
-import com.example.allaccountbook.database.repository.ExpenseRepository
-import com.example.allaccountbook.database.entity.TransactionEntity
+import com.example.allaccountbook.database.model.TransactionDetail
 import com.example.allaccountbook.database.model.TransactionType
+import com.example.allaccountbook.database.repository.TransactionRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class SmsReceiver(
-    private val transactionRepository: TransactionRepository,
-    private val expenseRepository: ExpenseRepository
+    private val transactionRepository: TransactionRepository
 ) : BroadcastReceiver() {
+
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent?.action == Telephony.Sms.Intents.SMS_RECEIVED_ACTION) {
             val msgs = Telephony.Sms.Intents.getMessagesFromIntent(intent)
@@ -26,22 +25,29 @@ class SmsReceiver(
 
             val parsed = parseSmsMessage(msgBody)
             if (parsed != null && context != null) {
-
                 CoroutineScope(Dispatchers.IO).launch {
-                    val transaction = TransactionEntity(
-                        transactionType = TransactionType.EXPENSE
+                    val apiKey = "95889668bdd945a3d78d8ce66b45e8fd"
+
+                    val pos = getKakaoPos(parsed.place, apiKey)
+                    val category = getKakaoCategoryName(parsed.place, apiKey) ?: "기타"
+
+                    val entity = smsParsedToExpenseEntity(
+                        parsed = parsed,
+                        transactionId = 0, // ID는 내부에서 설정
+                        category = category
                     )
 
-                    val transactionId = transactionRepository.insertAndGetId(transaction).toInt()
+                    val detail = TransactionDetail.Expense(
+                        data = entity,
+                        latitude = pos?.first,
+                        longitude = pos?.second
+                    )
 
-                    val apiKey = "95889668bdd945a3d78d8ce66b45e8fd"
-                    val category = getKakaoCategoryName(parsed.place, apiKey) ?: "기타"
-                    val entity = smsParsedToExpenseEntity(parsed, transactionId = transactionId, category = category)
-                    expenseRepository.insert(entity)
-                    Log.d("SmsReceiver", "DB삽입: $entity")
+                    transactionRepository.insertExpenseIfNotExists(detail)
+                    Log.d("SmsReceiver", "DB 삽입 시도: $entity, 위치: $pos")
                 }
             } else {
-                Log.d("SmsReceiver", "분석 실패")
+                Log.d("SmsReceiver", "SMS 분석 실패")
             }
         }
     }

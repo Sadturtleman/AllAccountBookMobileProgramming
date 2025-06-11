@@ -31,5 +31,33 @@ suspend fun getKakaoCategoryName(
     val docs = json.getJSONArray("documents")
     if (docs.length() == 0) return null
 
+    Log.d("test", docs.toString())
     return docs.getJSONObject(0).optString("category_group_name") ?: return null
+}
+
+suspend fun getKakaoPos(
+    placeName: String,
+    apiKey: String
+) : Pair<Double, Double>?{
+    val encoded = URLEncoder.encode(placeName, "UTF-8")
+    val url = "https://dapi.kakao.com/v2/local/search/keyword.json?query=$encoded"
+
+    val request = Request.Builder()
+        .url(url)
+        .addHeader("Authorization", "KakaoAK $apiKey")
+        .build()
+
+    val response = withContext(Dispatchers.IO) {
+        OkHttpClient().newCall(request).execute()
+    }
+
+    if (!response.isSuccessful) return null
+    val json = JSONObject(response.body?.string() ?: return null)
+    val docs = json.getJSONArray("documents")
+    if (docs.length() == 0) return null
+
+    Log.d("test",
+        (docs.getJSONObject(0).optString("x").toDouble() to docs.getJSONObject(0).optString("y").toDouble()).toString()
+    )
+    return docs.getJSONObject(0).optString("x").toDouble() to docs.getJSONObject(0).optString("y").toDouble()
 }
