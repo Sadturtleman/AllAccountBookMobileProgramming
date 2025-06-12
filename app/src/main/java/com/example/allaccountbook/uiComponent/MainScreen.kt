@@ -1,5 +1,6 @@
 package com.example.allaccountbook.uiComponent
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,27 +13,95 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import com.example.allaccountbook.database.model.TransactionDetail
+import com.example.allaccountbook.model.BorrowType
 import com.example.allaccountbook.uiPersistent.BottomNavBar
 import com.example.allaccountbook.uiPersistent.CustomDatePickerDialog
 import com.example.allaccountbook.uiPersistent.formatWithCommas
 import com.example.allaccountbook.uiPersistent.showDate
+import com.example.allaccountbook.viewmodel.view.BorrowViewModel
+import com.example.allaccountbook.viewmodel.view.TransactionViewModel
+import java.util.Calendar
+import java.util.Date
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(navController: NavController) {
+fun MainScreen(
+    viewmodel: TransactionViewModel = hiltViewModel(),
+    borrowViewModel: BorrowViewModel = hiltViewModel(),
+    navController: NavController
+) {
+
     var selectedDate by remember { mutableStateOf("2025년 5월") }
     var showDateDialog by remember { mutableStateOf(false) }
-    var usagePercent by remember { mutableStateOf(70f) }
 
-    var getTotalSavings by remember { mutableStateOf(3540000) }
-    var getTotalInvestments by remember { mutableStateOf(3332000) }
-    var getAvailableBalance by remember { mutableStateOf(555100) }
+    val selectedDateFormat = remember { SimpleDateFormat("yyyy년 M월", Locale.KOREA) }
+    val selectedDateObj = remember(selectedDate) {
+        selectedDateFormat.parse(selectedDate)
+    }
+    val selectedYearMonth = selectedDateObj?.toYearMonth()
+
+
+    val transactions by viewmodel.transactions.collectAsState()
+
+    val borrow by borrowViewModel.borrowList.collectAsState()
+    borrow.forEach {
+        Log.d("borrow", it.toString())
+    }
+    val savingList = transactions
+        .filterIsInstance<TransactionDetail.Saving>()
+        .filter {
+            val start = it.data.startDate.toYearMonth()
+            val end = it.data.endDate.toYearMonth()
+            selectedYearMonth != null && isYearMonthInRange(selectedYearMonth, start, end)
+        }
+
+
+    val expenseList = transactions
+        .filterIsInstance<TransactionDetail.Expense>()
+        .filter {
+            selectedYearMonth != null &&
+                    it.data.date.toYearMonth() == selectedYearMonth
+        }
+
+    val incomeList = transactions
+        .filterIsInstance<TransactionDetail.Income>()
+        .filter {
+            selectedYearMonth != null &&
+                    it.data.date.toYearMonth() == selectedYearMonth
+        }
+
+    val borrowList = borrow.filter {
+        it.type == BorrowType.BORROW &&
+                selectedYearMonth != null &&
+                it.date.toYearMonth() == selectedYearMonth
+    }
+
+    val lendList = borrow.filter {
+        it.type == BorrowType.BORROWED &&
+                selectedYearMonth != null &&
+                it.date.toYearMonth() == selectedYearMonth
+    }
+
+    var usagePercent by remember {
+        mutableFloatStateOf(
+            (expenseList.sumOf { it.data.price }.toFloat()).let { expense ->
+                val income = incomeList.sumOf { it.data.price }
+                if (income == 0) 0f else expense / income
+            }
+        )
+    }
+
+    var getTotalSavings by remember { mutableIntStateOf(savingList.sumOf { it.data.price }) }
+    var getTotalInvestments by remember { mutableIntStateOf(3332000) }
+    var getAvailableBalance by remember { mutableIntStateOf(incomeList.sumOf { it.data.price }) }
 
     val getTotalAmount by remember {
         derivedStateOf {
@@ -40,8 +109,19 @@ fun MainScreen(navController: NavController) {
         }
     }
 
-    var getTotalLentAmount by remember { mutableStateOf(0) }
-    var getTotalBorrowedAmount by remember { mutableStateOf(0) }
+    val getTotalLentAmount by remember(lendList) {
+        derivedStateOf {
+            lendList.sumOf { it.price }
+        }
+    }
+    val getTotalBorrowedAmount by remember(borrowList) {
+        derivedStateOf {
+            borrowList.sumOf { it.price }
+        }
+    }
+
+    Log.d("TotalBorrow", getTotalLentAmount.toString())
+    Log.d("TotalBorrowed", getTotalBorrowedAmount.toString())
 
     Column(
         modifier = Modifier
@@ -83,7 +163,7 @@ fun MainScreen(navController: NavController) {
                 InfoRow(
                     label = "전체 총 금액",
                     value = formatWithCommas(getTotalAmount),
-                    fontsize = 25,
+                    fontSize = 25,
                     modifier = Modifier.clickable { /* 화면 이동 */ }
                 )
 
@@ -105,7 +185,7 @@ fun MainScreen(navController: NavController) {
                 InfoRow(
                     label = "사용 가능 금액",
                     value = formatWithCommas(getAvailableBalance),
-                    modifier = Modifier.clickable {  navController.navigate("availableDetail")/* 화면 이동 */ }
+                    modifier = Modifier.clickable { navController.navigate("availableDetail")/* 화면 이동 */ }
                 )
 
                 InfoRow(
@@ -179,21 +259,28 @@ fun MainScreen(navController: NavController) {
 fun InfoRow(
     label: String,
     value: String,
-    fontsize : Int = 20,
-    modifier : Modifier = Modifier
+    fontSize: Int = 20,
+    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(label, fontSize = fontsize.sp, fontWeight = FontWeight.SemiBold)
-        Text(value, fontSize = fontsize.sp)
+        Text(label, fontSize = fontSize.sp, fontWeight = FontWeight.SemiBold)
+        Text(value, fontSize = fontSize.sp)
     }
 }
 
-@Preview
-@Composable
-private fun MainScreenPrev() {
-    val navController = rememberNavController()
-    MainScreen(navController)
+fun Date.toYearMonth(): Pair<Int, Int> {
+    val cal = Calendar.getInstance().apply { time = this@toYearMonth }
+    return cal.get(Calendar.YEAR) to cal.get(Calendar.MONTH) // 0-based month
+}
+
+fun isYearMonthInRange(
+    target: Pair<Int, Int>,
+    start: Pair<Int, Int>,
+    end: Pair<Int, Int>
+): Boolean {
+    return (target.first > start.first || (target.first == start.first && target.second >= start.second)) &&
+            (target.first < end.first || (target.first == end.first && target.second <= end.second))
 }

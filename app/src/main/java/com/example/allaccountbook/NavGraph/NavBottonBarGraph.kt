@@ -9,7 +9,7 @@ import com.example.allaccountbook.uiComponent.ShowDaily.ShowDailyScreen
 
 fun NavGraphBuilder.NavBottonBarGraph(navController: NavHostController) {
     composable("home") {
-        MainScreen(navController)
+        MainScreen(navController = navController)
     }
     composable("date") {
         ShowDailyScreen(

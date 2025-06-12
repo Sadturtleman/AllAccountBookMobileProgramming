@@ -35,7 +35,7 @@ fun NavGraphBuilder.LoginNavGraph(navController: NavHostController) {
         )
     }
 
-    composable("main") { MainScreen(navController) }
+    composable("main") { MainScreen(navController = navController) }
     composable("savingDetail") { SavingDetailScreen(navController) }
 
     // 투자 상세 페이지 (전체/성향)
