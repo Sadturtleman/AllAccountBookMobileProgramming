@@ -20,7 +20,7 @@ fun CustomDatePickerDialog(
                 OutlinedButton(onClick = {
                     datePickerState.selectedDateMillis?.let { millis ->
                         val date = Date(millis)
-                        val format = SimpleDateFormat("yyyy년 M월", Locale.KOREA)
+                        val format = SimpleDateFormat("yyyy년 M월 d일", Locale.KOREA)
                         onDateSelected(format.format(date))
                     }
                     onDismiss()
