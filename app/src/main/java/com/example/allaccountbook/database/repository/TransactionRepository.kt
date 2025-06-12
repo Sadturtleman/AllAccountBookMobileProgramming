@@ -51,6 +51,9 @@ class TransactionRepository @Inject constructor(
                 TransactionType.EXPENSE -> expenseDAO.getByTransactionId(transaction.transactionId)?.let {
                     TransactionDetail.Expense(it, lat, lng)
                 }
+                TransactionType.INVEST -> investDAO.getByTransactionId(transaction.transactionId)?.let {
+                    TransactionDetail.Invest(it)
+                }
             }
         }
     }
@@ -74,6 +77,12 @@ class TransactionRepository @Inject constructor(
                 val transactionId = transactionDAO.InsertTransaction(transaction)
                 expenseDAO.InsertExpense(detail.data.copy(transactionId = transactionId.toInt()))
             }
+
+            is TransactionDetail.Invest -> {
+                val transaction = TransactionEntity(transactionType = TransactionType.INVEST, latitude = null, longitude = null)
+                val transactionId = transactionDAO.InsertTransaction(transaction)
+                investDAO.InsertInvest(detail.data.copy(transactionId = transactionId.toInt()))
+            }
         }
     }
 
@@ -82,13 +91,6 @@ class TransactionRepository @Inject constructor(
         val expenseCats = expenseDAO.getAllExpenseCategories()
         return (incomeCats + expenseCats).distinct()
 
-//        return all.mapNotNull { catName ->
-//            try {
-//                valueOf(catName)
-//            } catch (e: IllegalArgumentException) {
-//                null // enum에 없는 값은 무시
-//            }
-//        }.toSet()
     }
     suspend fun insertAndGetId(transaction: TransactionEntity): Long {
         return transactionDAO.InsertTransaction(transaction)

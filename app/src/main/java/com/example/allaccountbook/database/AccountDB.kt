@@ -13,9 +13,10 @@ import com.example.allaccountbook.database.entity.*
         SavingEntity::class,
         IncomeEntity::class,
         ExpenseEntity::class,
-        BorrowEntity::class
+        BorrowEntity::class,
+        InvestEntity::class
     ],
-    version = 5, // 현재 개발 버전에 맞게 증가시킴
+    version = 6, // 현재 개발 버전에 맞게 증가시킴
     exportSchema = false
 )
 abstract class AccountDB : RoomDatabase() {
@@ -24,6 +25,7 @@ abstract class AccountDB : RoomDatabase() {
     abstract fun getIncomeDao(): IncomeDAO
     abstract fun getExpenseDao(): ExpenseDAO
     abstract fun getBorrowDao(): BorrowDAO
+    abstract fun getInvestDao(): InvestDAO
 
     companion object {
         @Volatile

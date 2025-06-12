@@ -9,6 +9,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,6 +29,8 @@ import com.example.allaccountbook.viewmodel.view.TransactionViewModel
 import java.util.Calendar
 import java.util.Date
 import java.text.SimpleDateFormat
+import java.time.YearMonth
+import java.time.ZoneId
 import java.util.Locale
 
 
@@ -39,7 +42,11 @@ fun MainScreen(
     navController: NavController
 ) {
 
-    var selectedDate by remember { mutableStateOf("2025년 5월") }
+    val currentMonthDefault = remember {
+        SimpleDateFormat("yyyy년 M월", Locale.KOREA).format(Date())
+    }
+
+    var selectedDate by rememberSaveable { mutableStateOf(currentMonthDefault) }
     var showDateDialog by remember { mutableStateOf(false) }
 
     val selectedDateFormat = remember { SimpleDateFormat("yyyy년 M월", Locale.KOREA) }
@@ -48,10 +55,13 @@ fun MainScreen(
     }
     val selectedYearMonth = selectedDateObj?.toYearMonth()
 
-
     val transactions by viewmodel.transactions.collectAsState()
-
     val borrow by borrowViewModel.borrowList.collectAsState()
+
+    transactions.forEach {
+        Log.d("transactions", it.toString())
+    }
+
     borrow.forEach {
         Log.d("borrow", it.toString())
     }
@@ -60,9 +70,11 @@ fun MainScreen(
         .filter {
             val start = it.data.startDate.toYearMonth()
             val end = it.data.endDate.toYearMonth()
-            selectedYearMonth != null && isYearMonthInRange(selectedYearMonth, start, end)
-        }
 
+            Log.d("SavingFilter", "selected=$selectedYearMonth, start=$start, end=$end")
+
+            selectedYearMonth != null && selectedYearMonth in start..end
+        }
 
     val expenseList = transactions
         .filterIsInstance<TransactionDetail.Expense>()
@@ -90,34 +102,47 @@ fun MainScreen(
                 it.date.toYearMonth() == selectedYearMonth
     }
 
-    var usagePercent by remember {
-        mutableFloatStateOf(
-            (expenseList.sumOf { it.data.price }.toFloat()).let { expense ->
-                val income = incomeList.sumOf { it.data.price }
-                if (income == 0) 0f else expense / income
-            }
-        )
+    val investList = transactions
+        .filterIsInstance<TransactionDetail.Invest>()
+        .filter {
+            selectedYearMonth != null &&
+                    it.data.date.toYearMonth() == selectedYearMonth
+        }
+
+    val usagePercent by remember(expenseList, incomeList) {
+        derivedStateOf {
+            val expense = expenseList.sumOf { it.data.price }.toFloat()
+            val income = incomeList.sumOf { it.data.price }
+            if (income == 0) 0f else expense / income
+        }
     }
 
-    var getTotalSavings by remember { mutableIntStateOf(savingList.sumOf { it.data.price }) }
-    var getTotalInvestments by remember { mutableIntStateOf(3332000) }
-    var getAvailableBalance by remember { mutableIntStateOf(incomeList.sumOf { it.data.price }) }
+    val getTotalSavings by remember(savingList) {
+        derivedStateOf { savingList.sumOf { it.data.price } }
+    }
 
-    val getTotalAmount by remember {
+    val getAvailableBalance by remember(incomeList) {
+        derivedStateOf { incomeList.sumOf { it.data.price } }
+    }
+
+    val getTotalInvestments by remember(investList) {
+        derivedStateOf {
+            investList.sumOf { it.data.price }
+        }
+    }
+
+    val getTotalAmount by remember(getTotalSavings, getTotalInvestments, getAvailableBalance) {
         derivedStateOf {
             getTotalSavings + getTotalInvestments + getAvailableBalance
         }
     }
 
     val getTotalLentAmount by remember(lendList) {
-        derivedStateOf {
-            lendList.sumOf { it.price }
-        }
+        derivedStateOf { lendList.sumOf { it.price } }
     }
+
     val getTotalBorrowedAmount by remember(borrowList) {
-        derivedStateOf {
-            borrowList.sumOf { it.price }
-        }
+        derivedStateOf { borrowList.sumOf { it.price } }
     }
 
     Log.d("TotalBorrow", getTotalLentAmount.toString())
@@ -271,16 +296,9 @@ fun InfoRow(
     }
 }
 
-fun Date.toYearMonth(): Pair<Int, Int> {
-    val cal = Calendar.getInstance().apply { time = this@toYearMonth }
-    return cal.get(Calendar.YEAR) to cal.get(Calendar.MONTH) // 0-based month
-}
-
-fun isYearMonthInRange(
-    target: Pair<Int, Int>,
-    start: Pair<Int, Int>,
-    end: Pair<Int, Int>
-): Boolean {
-    return (target.first > start.first || (target.first == start.first && target.second >= start.second)) &&
-            (target.first < end.first || (target.first == end.first && target.second <= end.second))
+fun Date.toYearMonth(): YearMonth {
+    return this.toInstant()
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate()
+        .let { YearMonth.of(it.year, it.month) }
 }

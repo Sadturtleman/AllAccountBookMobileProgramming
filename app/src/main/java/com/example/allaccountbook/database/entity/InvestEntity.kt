@@ -28,6 +28,7 @@ data class InvestEntity (
     val investId : Int = 0,
     var transactionId : Int,
     var count : Int,
+    var price : Int,
     var name : String,
     var date : Date
 )

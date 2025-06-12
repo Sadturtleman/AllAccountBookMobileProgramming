@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.example.allaccountbook.database.dao.BorrowDAO
 import com.example.allaccountbook.database.dao.ExpenseDAO
 import com.example.allaccountbook.database.dao.IncomeDAO
+import com.example.allaccountbook.database.dao.InvestDAO
 import com.example.allaccountbook.database.dao.SavingDAO
 import com.example.allaccountbook.database.dao.TransactionDAO
 import dagger.Module
@@ -53,5 +54,10 @@ object DatabaseModule {
     @Provides
     fun provideExpenseDao(accountDB: AccountDB) : ExpenseDAO{
         return accountDB.getExpenseDao()
+    }
+
+    @Provides
+    fun provideInvestDao(accountDB: AccountDB) : InvestDAO{
+        return accountDB.getInvestDao()
     }
 }
