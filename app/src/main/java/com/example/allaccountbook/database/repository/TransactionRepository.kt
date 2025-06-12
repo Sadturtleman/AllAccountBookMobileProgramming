@@ -3,6 +3,7 @@ package com.example.allaccountbook.database.repository
 import android.util.Log
 import com.example.allaccountbook.database.dao.ExpenseDAO
 import com.example.allaccountbook.database.dao.IncomeDAO
+import com.example.allaccountbook.database.dao.InvestDAO
 import com.example.allaccountbook.database.dao.SavingDAO
 import com.example.allaccountbook.database.dao.TransactionDAO
 import com.example.allaccountbook.database.entity.TransactionEntity
@@ -16,7 +17,8 @@ class TransactionRepository @Inject constructor(
     private val transactionDAO: TransactionDAO,
     private val savingDAO: SavingDAO,
     private val incomeDAO: IncomeDAO,
-    private val expenseDAO: ExpenseDAO
+    private val expenseDAO: ExpenseDAO,
+    private val investDAO: InvestDAO
 ) {
     suspend fun insert(transaction: TransactionEntity) {
         transactionDAO.InsertTransaction(transaction)
