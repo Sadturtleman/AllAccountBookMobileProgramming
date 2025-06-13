@@ -3,8 +3,10 @@ package com.example.allaccountbook.database.repository
 import android.util.Log
 import com.example.allaccountbook.database.dao.ExpenseDAO
 import com.example.allaccountbook.database.dao.IncomeDAO
+import com.example.allaccountbook.database.dao.InvestDAO
 import com.example.allaccountbook.database.dao.SavingDAO
 import com.example.allaccountbook.database.dao.TransactionDAO
+import com.example.allaccountbook.database.entity.InvestEntity
 import com.example.allaccountbook.database.entity.TransactionEntity
 import com.example.allaccountbook.database.model.TransactionCategory
 import com.example.allaccountbook.database.model.TransactionDetail
@@ -16,7 +18,8 @@ class TransactionRepository @Inject constructor(
     private val transactionDAO: TransactionDAO,
     private val savingDAO: SavingDAO,
     private val incomeDAO: IncomeDAO,
-    private val expenseDAO: ExpenseDAO
+    private val expenseDAO: ExpenseDAO,
+    private val investDAO: InvestDAO
 ) {
     suspend fun insert(transaction: TransactionEntity) {
         transactionDAO.InsertTransaction(transaction)
@@ -49,6 +52,9 @@ class TransactionRepository @Inject constructor(
                 TransactionType.EXPENSE -> expenseDAO.getByTransactionId(transaction.transactionId)?.let {
                     TransactionDetail.Expense(it, lat, lng)
                 }
+                TransactionType.INVEST -> investDAO.getByTransactionId(transaction.transactionId)?.let {
+                    TransactionDetail.Invest(it)
+                }
             }
         }
     }
@@ -72,6 +78,12 @@ class TransactionRepository @Inject constructor(
                 val transactionId = transactionDAO.InsertTransaction(transaction)
                 expenseDAO.InsertExpense(detail.data.copy(transactionId = transactionId.toInt()))
             }
+
+            is TransactionDetail.Invest -> {
+                val transaction = TransactionEntity(transactionType = TransactionType.INVEST, latitude = null, longitude = null)
+                val transactionId = transactionDAO.InsertTransaction(transaction)
+                investDAO.InsertInvest(detail.data.copy(transactionId = transactionId.toInt()))
+            }
         }
     }
 
@@ -80,13 +92,6 @@ class TransactionRepository @Inject constructor(
         val expenseCats = expenseDAO.getAllExpenseCategories()
         return (incomeCats + expenseCats).distinct()
 
-//        return all.mapNotNull { catName ->
-//            try {
-//                valueOf(catName)
-//            } catch (e: IllegalArgumentException) {
-//                null // enum에 없는 값은 무시
-//            }
-//        }.toSet()
     }
     suspend fun insertAndGetId(transaction: TransactionEntity): Long {
         return transactionDAO.InsertTransaction(transaction)
@@ -116,4 +121,7 @@ class TransactionRepository @Inject constructor(
         expenseDAO.InsertExpense(detail.data.copy(transactionId = transactionId))
     }
 
+    suspend fun getInvestByName(name : String) : List<InvestEntity>? {
+        return investDAO.getByName(name)
+    }
 }

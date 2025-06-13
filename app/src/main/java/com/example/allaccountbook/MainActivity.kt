@@ -14,7 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
-import com.example.allaccountbook.NavGraph.StartScreen
+import com.example.allaccountbook.navGraph.StartScreen
 import com.example.allaccountbook.ui.theme.AllAccountBookTheme
 import com.example.allaccountbook.uiComponent.SMS.SmsReceiver
 import com.example.allaccountbook.database.repository.TransactionRepository
