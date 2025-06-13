@@ -208,11 +208,6 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
         }
 
         if (showTrendDialog) {
-            InvestmentTrendDialog(
-                onDismiss = { showTrendDialog = false },
-                navController = navController,
-                trendName = "부동산"
-            )
             navController.navigate("investmentTrendDetail/$selectedDate/$selectedItemCategory")
         }
 

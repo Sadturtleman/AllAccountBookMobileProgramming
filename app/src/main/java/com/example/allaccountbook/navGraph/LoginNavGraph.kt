@@ -1,24 +1,24 @@
-package com.example.allaccountbook.NavGraph
-
+package com.example.allaccountbook.navGraph
 
 import android.annotation.SuppressLint
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import com.example.allaccountbook.uiComponent.MainScreen
+import com.example.allaccountbook.uiComponent.PhoneRegisterScreen
+import com.example.allaccountbook.uiComponent.add.AddBorrowItemScreen
 import com.example.allaccountbook.uiComponent.available.AvailableDetailScreen
 import com.example.allaccountbook.uiComponent.available.CategoryDetailScreen
-import com.example.allaccountbook.uiComponent.add.AddBorrowItemScreen
 import com.example.allaccountbook.uiComponent.investment.InvestmentDetailScreen
 import com.example.allaccountbook.uiComponent.investment.InvestmentSummaryDetailScreen
 import com.example.allaccountbook.uiComponent.investment.InvestmentTrendDetailScreen
+import com.example.allaccountbook.uiComponent.lendBorrow.LendBorrowListScreen
 import com.example.allaccountbook.uiComponent.login.LoginPage
 import com.example.allaccountbook.uiComponent.login.WrongLoginPage
-import com.example.allaccountbook.uiComponent.savingScreen.SavingDetailScreen
 import com.example.allaccountbook.uiComponent.savingScreen.SavingAmountDetailScreen
+import com.example.allaccountbook.uiComponent.savingScreen.SavingDetailScreen
 import com.example.allaccountbook.uiComponent.showDaily.DailySpendingDetailScreen
-import com.example.allaccountbook.uiComponent.lendBorrow.LendBorrowListScreen
-import com.example.allaccountbook.uiComponent.PhoneRegisterScreen
-import com.example.allaccountbook.uiComponent.MainScreen
+
 
 @SuppressLint("ComposableDestinationInComposeScope")
 fun NavGraphBuilder.LoginNavGraph(navController: NavHostController) {
@@ -47,7 +47,7 @@ fun NavGraphBuilder.LoginNavGraph(navController: NavHostController) {
 
         InvestmentDetailScreen(selectedDate = displayDate, navController = navController)
     }
-    composable("investmentTrendDetail/{selectedDate}{category}") {
+    composable("investmentTrendDetail/{selectedDate}/{category}") {
         val date = it.arguments?.getString("selectedDate") ?: ""
         val displayDate = convertToKoreanDate(date)
 
@@ -70,7 +70,13 @@ fun NavGraphBuilder.LoginNavGraph(navController: NavHostController) {
         )
     }
     // 사용 가능 금액 상세 페이지
-    composable("availableDetail") { AvailableDetailScreen(navController) }
+    composable("availableDetail/{selectedDate}") {
+        val date = it.arguments?.getString("selectedDate") ?: ""
+        val displayDate = convertToKoreanDate(date)
+
+
+        AvailableDetailScreen(navController, selectedDate = displayDate)
+    }
 
     // 카테고리 상세 페이지
     composable("categoryDetail") { CategoryDetailScreen(navController) }

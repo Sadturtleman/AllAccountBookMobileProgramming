@@ -1,4 +1,4 @@
-package com.example.allaccountbook.NavGraph
+package com.example.allaccountbook.navGraph
 
 import com.example.allaccountbook.uiComponent.MainScreen
 import androidx.navigation.NavGraphBuilder
