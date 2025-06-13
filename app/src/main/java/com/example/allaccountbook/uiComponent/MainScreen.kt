@@ -127,7 +127,7 @@ fun MainScreen(
 
     val getTotalInvestments by remember(investList) {
         derivedStateOf {
-            investList.sumOf { it.data.price }
+            investList.sumOf { it.data.price * it.data.count }
         }
     }
 
@@ -204,7 +204,7 @@ fun MainScreen(
                 InfoRow(
                     label = "투자 총계",
                     value = formatWithCommas(getTotalInvestments),
-                    modifier = Modifier.clickable { navController.navigate("investmentDetail")/* 화면 이동 */ }
+                    modifier = Modifier.clickable { navController.navigate("investmentDetail/${selectedDate}")/* 화면 이동 */ }
                 )
 
                 InfoRow(

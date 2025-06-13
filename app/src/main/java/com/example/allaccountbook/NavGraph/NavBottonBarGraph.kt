@@ -5,7 +5,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.example.allaccountbook.map.TransactionMapScreen
-import com.example.allaccountbook.uiComponent.ShowDaily.ShowDailyScreen
+import com.example.allaccountbook.uiComponent.showDaily.ShowDailyScreen
 
 fun NavGraphBuilder.NavBottonBarGraph(navController: NavHostController) {
     composable("home") {

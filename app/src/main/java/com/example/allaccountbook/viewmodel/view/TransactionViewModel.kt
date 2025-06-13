@@ -5,7 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.allaccountbook.database.entity.ExpenseEntity
 import com.example.allaccountbook.database.entity.IncomeEntity
+import com.example.allaccountbook.database.entity.InvestEntity
 import com.example.allaccountbook.database.entity.SavingEntity
+import com.example.allaccountbook.database.model.InvestType
 import com.example.allaccountbook.database.model.TransactionCategory
 import com.example.allaccountbook.database.model.TransactionDetail
 import com.example.allaccountbook.database.model.getDate
@@ -38,6 +40,10 @@ class TransactionViewModel @Inject constructor(
         viewModelScope.launch {
             _transactions.value = repository.getAllTransactionWithDetails()
         }
+    }
+
+    suspend fun getInvestByName(name : String) : List<InvestEntity>? {
+        return repository.getInvestByName(name)
     }
 
     private fun insertMockData() {
@@ -100,6 +106,17 @@ class TransactionViewModel @Inject constructor(
                     ),
                     latitude = null,
                     longitude = null
+                ),
+                TransactionDetail.Invest(
+                    data = InvestEntity(
+                        transactionId = 6,
+                        count = 2,
+                        price = 1000,
+                        name = "농심",
+                        date = Calendar.getInstance().apply { set(2025, 4, 1) }.time,
+                        category = "음식",
+                        type = InvestType.BUY
+                    )
                 )
             )
 

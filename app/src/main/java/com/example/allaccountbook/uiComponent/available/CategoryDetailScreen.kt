@@ -1,4 +1,4 @@
-package com.example.allaccountbook.Category
+package com.example.allaccountbook.uiComponent.available
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -12,7 +12,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.allaccountbook.Available.CategoryMonthlyDetailScreen
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.example.allaccountbook.uiPersistent.BottomNavBar
 

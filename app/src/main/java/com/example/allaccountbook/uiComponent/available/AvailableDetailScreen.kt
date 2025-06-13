@@ -1,4 +1,4 @@
-package com.example.allaccountbook.uiComponent.Available
+package com.example.allaccountbook.uiComponent.available
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

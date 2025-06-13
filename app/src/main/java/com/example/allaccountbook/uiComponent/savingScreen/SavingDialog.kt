@@ -1,4 +1,4 @@
-package com.example.allaccountbook.uiComponent.SavingScreen
+package com.example.allaccountbook.uiComponent.savingScreen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column

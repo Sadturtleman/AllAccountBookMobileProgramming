@@ -6,6 +6,7 @@ import com.example.allaccountbook.database.dao.IncomeDAO
 import com.example.allaccountbook.database.dao.InvestDAO
 import com.example.allaccountbook.database.dao.SavingDAO
 import com.example.allaccountbook.database.dao.TransactionDAO
+import com.example.allaccountbook.database.entity.InvestEntity
 import com.example.allaccountbook.database.entity.TransactionEntity
 import com.example.allaccountbook.database.model.TransactionCategory
 import com.example.allaccountbook.database.model.TransactionDetail
@@ -120,4 +121,7 @@ class TransactionRepository @Inject constructor(
         expenseDAO.InsertExpense(detail.data.copy(transactionId = transactionId))
     }
 
+    suspend fun getInvestByName(name : String) : List<InvestEntity>? {
+        return investDAO.getByName(name)
+    }
 }

@@ -65,7 +65,7 @@ fun TransactionDetail.getCategory(): String = when (this) {
     is TransactionDetail.Expense -> this.data.category
     is TransactionDetail.Income -> this.data.category
     is TransactionDetail.Saving -> this.data.category
-    is TransactionDetail.Invest -> null.toString()
+    is TransactionDetail.Invest -> this.data.category
 }
 
 fun TransactionEntity.getLocation(): Pair<Double?, Double?> =

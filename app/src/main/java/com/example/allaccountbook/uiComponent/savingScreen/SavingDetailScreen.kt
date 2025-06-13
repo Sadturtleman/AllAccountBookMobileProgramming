@@ -1,4 +1,4 @@
-package com.example.allaccountbook.uiComponent.SavingScreen
+package com.example.allaccountbook.uiComponent.savingScreen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

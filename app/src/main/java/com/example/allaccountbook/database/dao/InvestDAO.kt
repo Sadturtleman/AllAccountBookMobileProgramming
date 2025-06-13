@@ -22,4 +22,6 @@ interface InvestDAO {
     @Query("SELECT * FROM `Invest` WHERE `Invest`.transactionId = :id")
     suspend fun getByTransactionId(id : Int): InvestEntity?
 
+    @Query("SELECT * FROM `Invest` WHERE `Invest`.name = :name")
+    suspend fun getByName(name : String) : List<InvestEntity>?
 }

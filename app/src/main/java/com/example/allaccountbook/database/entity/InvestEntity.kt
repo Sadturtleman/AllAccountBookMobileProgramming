@@ -6,6 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.example.allaccountbook.database.model.DateConverter
+import com.example.allaccountbook.database.model.InvestType
 import com.example.allaccountbook.database.model.InvestTypeConverter
 import java.util.Date
 
@@ -30,5 +31,7 @@ data class InvestEntity (
     var count : Int,
     var price : Int,
     var name : String,
-    var date : Date
+    var date : Date,
+    var category : String,
+    var type : InvestType
 )

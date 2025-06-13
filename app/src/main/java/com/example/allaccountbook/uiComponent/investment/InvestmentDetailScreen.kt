@@ -1,4 +1,4 @@
-package com.example.allaccountbook.uiComponent.Investment
+package com.example.allaccountbook.uiComponent.investment
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -8,21 +8,65 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import com.example.allaccountbook.database.model.TransactionDetail
+import com.example.allaccountbook.uiComponent.toYearMonth
 import com.example.allaccountbook.uiPersistent.BottomNavBar
 import com.example.allaccountbook.uiPersistent.CustomDatePickerDialog
+import com.example.allaccountbook.viewmodel.view.TransactionViewModel
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
-fun InvestmentDetailScreen(navController: NavController) {
-    var selectedMonth by remember { mutableStateOf("2025-05") }
+fun InvestmentDetailScreen(navController: NavController, selectedDate : String, viewmodel : TransactionViewModel = hiltViewModel()) {
+    var selectedMonth by remember { mutableStateOf(selectedDate) }
+    val selectedDateFormat = remember { SimpleDateFormat("yyyy년 M월", Locale.KOREA) }
+    val selectedDateObj = remember(selectedDate) {
+        selectedDateFormat.parse(selectedDate)
+    }
+    val selectedYearMonth = selectedDateObj?.toYearMonth()
+
     var showDateDialog by remember { mutableStateOf(false) }
     var viewMode by remember { mutableStateOf("전체") }
     var expanded by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var showTrendDialog by remember { mutableStateOf(false) }
+
+    val transactions = viewmodel.transactions.collectAsState()
+// 1. 투자 항목 필터링 (선택 월 기준)
+    val investList by remember(transactions.value, selectedYearMonth) {
+        derivedStateOf {
+            transactions.value
+                .filterIsInstance<TransactionDetail.Invest>()
+                .filter {
+                    selectedYearMonth != null &&
+                            it.data.date.toYearMonth() == selectedYearMonth
+                }
+        }
+    }
+
+// 2. 카테고리별로 그룹화
+    val investByCategory by remember(investList) {
+        derivedStateOf {
+            investList.groupBy { it.data.category }
+        }
+    }
+
+// 3. 각 카테고리의 총 개수 및 총 금액 계산
+    val categoryTotal by remember(investByCategory) {
+        derivedStateOf {
+            investByCategory.mapValues { (_, list) ->
+                val totalCount = list.sumOf { it.data.count }
+                val totalPrice = list.sumOf { it.data.count * it.data.price }
+                totalCount to totalPrice
+            }
+        }
+    }
+
+    var selectedItemName by remember { mutableStateOf<String?>(null) }
+    var selectedItemCategory by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -102,32 +146,40 @@ fun InvestmentDetailScreen(navController: NavController) {
 
         Column(modifier = Modifier.fillMaxWidth()) {
             if (viewMode == "전체") {
-                repeat(3) {
+                investList.forEach {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { showDialog = true }
+                            .clickable {
+                                selectedItemName = it.data.name
+                                showDialog = true
+                            }
                             .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("A주식")
-                        Text("3")
-                        Text("10,000")
-                        Text("30,000")
+                        Text(it.data.name)
+                        Text(it.data.count.toString())
+                        Text(it.data.price.toString())
+                        Text((it.data.count * it.data.price).toString())
                     }
                 }
             } else {
-                repeat(3) {
+
+                categoryTotal.forEach { (category, pair) ->
+                    val (count, price) = pair
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { showTrendDialog = true }
+                            .clickable {
+                                selectedItemCategory = category
+                                showTrendDialog = true // 필요시 category 이름도 넘길 수 있음
+                            }
                             .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("부동산")
-                        Text("15,000")
-                        Text("200,000")
+                        Text(category)
+                        Text(count.toString())
+                        Text(price.toString())
                     }
                 }
 
@@ -135,13 +187,16 @@ fun InvestmentDetailScreen(navController: NavController) {
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
 
+                val totalCount = categoryTotal.values.sumOf { it.first }
+                val totalPrice = categoryTotal.values.sumOf { it.second }
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("총")
-                    Text("45,000")
-                    Text("600,000")
+                    Text(totalCount.toString())
+                    Text(totalPrice.toString())
                 }
             }
         }
@@ -149,11 +204,7 @@ fun InvestmentDetailScreen(navController: NavController) {
         Spacer(modifier = Modifier.weight(1f))
 
         if (showDialog) {
-            InvestmentSummaryDialog(
-                onDismiss = { showDialog = false },
-                navController = navController,
-                stockName = "A주식"
-            )
+            navController.navigate("investmentSummaryDetail/${selectedDate}/${selectedItemName}")
         }
 
         if (showTrendDialog) {
@@ -162,6 +213,7 @@ fun InvestmentDetailScreen(navController: NavController) {
                 navController = navController,
                 trendName = "부동산"
             )
+            navController.navigate("investmentTrendDetail/$selectedDate/$selectedItemCategory")
         }
 
         BottomNavBar(
@@ -170,11 +222,4 @@ fun InvestmentDetailScreen(navController: NavController) {
             onMapNavigate = { navController.navigate("map") }
         )
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun InvestmentDetailScreenPreview() {
-    val navController = rememberNavController()
-    InvestmentDetailScreen(navController)
 }

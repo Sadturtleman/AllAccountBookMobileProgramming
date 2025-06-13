@@ -1,4 +1,4 @@
-package com.example.allaccountbook.uiComponent.Investment
+package com.example.allaccountbook.uiComponent.investment
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

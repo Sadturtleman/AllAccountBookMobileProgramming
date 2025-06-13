@@ -1,4 +1,4 @@
-package com.example.allaccountbook.uiComponent.SavingScreen
+package com.example.allaccountbook.uiComponent.savingScreen
 
 
 
