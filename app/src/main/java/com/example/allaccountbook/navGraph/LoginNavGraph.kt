@@ -9,6 +9,7 @@ import com.example.allaccountbook.uiComponent.PhoneRegisterScreen
 import com.example.allaccountbook.uiComponent.add.AddBorrowItemScreen
 import com.example.allaccountbook.uiComponent.available.AvailableDetailScreen
 import com.example.allaccountbook.uiComponent.available.CategoryDetailScreen
+import com.example.allaccountbook.uiComponent.available.CategoryMonthlyDetailScreen
 import com.example.allaccountbook.uiComponent.investment.InvestmentDetailScreen
 import com.example.allaccountbook.uiComponent.investment.InvestmentSummaryDetailScreen
 import com.example.allaccountbook.uiComponent.investment.InvestmentTrendDetailScreen
@@ -82,7 +83,17 @@ fun NavGraphBuilder.LoginNavGraph(navController: NavHostController) {
     composable("categoryDetail") { CategoryDetailScreen(navController) }
 
     // 카테고리 월별 상세 페이지
-    composable("categoryMonthlyDetail") { CategoryDetailScreen(navController) }
+    composable("categoryMonthlyDetail/{selectedDate}/{category}") {
+        val date = it.arguments?.getString("selectedDate") ?: ""
+        val displayDate = convertToKoreanDate(date)
+
+        val category = it.arguments?.getString("category") ?: ""
+        CategoryMonthlyDetailScreen(
+            navController = navController,
+            selectedDate = displayDate,
+            selectedCategory = category
+        )
+    }
 
     // 저축 금액 "자세히 보기" 페이지
     composable("savingAmountDetail") { SavingAmountDetailScreen(navController) }
