@@ -12,6 +12,8 @@ import com.example.allaccountbook.database.model.TransactionCategory
 import com.example.allaccountbook.database.model.TransactionDetail
 import com.example.allaccountbook.database.model.TransactionType
 import com.example.allaccountbook.database.model.getLocation
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class TransactionRepository @Inject constructor(
@@ -33,27 +35,23 @@ class TransactionRepository @Inject constructor(
         transactionDAO.DeleteTransaction(transaction)
     }
 
-    suspend fun getAllTransactionWithDetails(): List<TransactionDetail>{
-        val transactions = transactionDAO.getAllTransaction()
-        transactions.forEach {
-            Log.d("Debug","${it.transactionType}  ${it.transactionId} ${(it.latitude to it.longitude.toString())}")
-        }
-        return transactions.mapNotNull {
-            transaction ->
-            val (lat, lng) = transaction.getLocation()
-            when(transaction.transactionType){
-                TransactionType.SAVING -> savingDAO.getByTransactionId(transaction.transactionId)?.let{
-                    TransactionDetail.Saving(it, lat, lng)
-                }
-
-                TransactionType.INCOME -> incomeDAO.getByTransactionId(transaction.transactionId)?.let {
-                    TransactionDetail.Income(it, lat, lng)
-                }
-                TransactionType.EXPENSE -> expenseDAO.getByTransactionId(transaction.transactionId)?.let {
-                    TransactionDetail.Expense(it, lat, lng)
-                }
-                TransactionType.INVEST -> investDAO.getByTransactionId(transaction.transactionId)?.let {
-                    TransactionDetail.Invest(it)
+    fun getAllTransactionWithDetails(): Flow<List<TransactionDetail>> {
+        return transactionDAO.getAllTransaction().map { transactions ->
+            transactions.mapNotNull { transaction ->
+                val (lat, lng) = transaction.getLocation()
+                when (transaction.transactionType) {
+                    TransactionType.SAVING -> savingDAO.getByTransactionId(transaction.transactionId)?.let {
+                        TransactionDetail.Saving(it, lat, lng)
+                    }
+                    TransactionType.INCOME -> incomeDAO.getByTransactionId(transaction.transactionId)?.let {
+                        TransactionDetail.Income(it, lat, lng)
+                    }
+                    TransactionType.EXPENSE -> expenseDAO.getByTransactionId(transaction.transactionId)?.let {
+                        TransactionDetail.Expense(it, lat, lng)
+                    }
+                    TransactionType.INVEST -> investDAO.getByTransactionId(transaction.transactionId)?.let {
+                        TransactionDetail.Invest(it)
+                    }
                 }
             }
         }

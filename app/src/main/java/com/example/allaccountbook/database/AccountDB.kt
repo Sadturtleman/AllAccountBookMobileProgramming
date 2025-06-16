@@ -16,7 +16,7 @@ import com.example.allaccountbook.database.entity.*
         BorrowEntity::class,
         InvestEntity::class
     ],
-    version = 8, // 현재 개발 버전에 맞게 증가시킴
+    version = 9, // 현재 개발 버전에 맞게 증가시킴
     exportSchema = false
 )
 abstract class AccountDB : RoomDatabase() {

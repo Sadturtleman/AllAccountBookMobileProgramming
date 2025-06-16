@@ -16,7 +16,9 @@ import com.example.allaccountbook.database.repository.IncomeRepository
 import com.example.allaccountbook.database.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -28,22 +30,28 @@ class TransactionViewModel @Inject constructor(
     private val repository: TransactionRepository
 ) : ViewModel() {
 
-    private val _transactions = MutableStateFlow<List<TransactionDetail>>(emptyList())
-    val transactions: StateFlow<List<TransactionDetail>> = _transactions
+    val transactions: StateFlow<List<TransactionDetail>> = repository.getAllTransactionWithDetails().stateIn(viewModelScope,
+        SharingStarted.WhileSubscribed(5000), emptyList())
 
-    init {
-        loadAllTransactions()
-        insertIfEmpty()
+
+    suspend fun getAllCategories():List<String>{
+        return repository.getAllUsedCategories()
     }
 
-    private fun loadAllTransactions() {
-        viewModelScope.launch {
-            _transactions.value = repository.getAllTransactionWithDetails()
+    suspend fun addExpense(expense: ExpenseEntity) {
+        repository.insertDetail(TransactionDetail.Expense(expense, null, null))
+    }
+
+    suspend fun addIncome(income: IncomeEntity) {
+        repository.insertDetail(TransactionDetail.Income(income, null, null))
+    }
+
+    fun getTransactionsByDate(dateString: String): List<TransactionDetail> {
+        val parsed = SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREA).parse(dateString)
+        val formatted = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(parsed!!)
+        return transactions.value.filter {
+            it.getDate() == formatted
         }
-    }
-
-    suspend fun getInvestByName(name : String) : List<InvestEntity>? {
-        return repository.getInvestByName(name)
     }
 
     private fun insertMockData() {
@@ -121,41 +129,6 @@ class TransactionViewModel @Inject constructor(
             )
 
             mockData.forEach { repository.insertDetail(it) }
-            loadAllTransactions()
         }
     }
-
-    private fun insertIfEmpty(){
-        viewModelScope.launch {
-            if (repository.getAllTransactionWithDetails().isEmpty()){
-                insertMockData()
-            }
-        }
-    }
-    fun refresh(){
-        loadAllTransactions()
-    }
-
-    suspend fun getTransactionsByDate(dateString: String): List<TransactionDetail> {
-        val parsed = SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREA).parse(dateString)
-        val formatted = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(parsed!!)
-        return repository.getAllTransactionWithDetails().filter {
-            it.getDate() == formatted
-        }
-    }
-
-    suspend fun getAllCategories():List<String>{
-        return repository.getAllUsedCategories()
-    }
-
-    suspend fun addExpense(expense: ExpenseEntity) {
-        repository.insertDetail(TransactionDetail.Expense(expense, null, null))
-        loadAllTransactions()
-    }
-
-    suspend fun addIncome(income: IncomeEntity) {
-        repository.insertDetail(TransactionDetail.Income(income, null, null))
-        loadAllTransactions()
-    }
-
 }
