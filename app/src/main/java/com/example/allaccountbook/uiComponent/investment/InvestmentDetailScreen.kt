@@ -28,7 +28,6 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
     }
     val selectedYearMonth = selectedDateObj?.toYearMonth()
 
-    var showDateDialog by remember { mutableStateOf(false) }
     var viewMode by remember { mutableStateOf("전체") }
     var expanded by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
@@ -81,7 +80,6 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
                 text = selectedMonth,
                 modifier = Modifier
                     .background(Color.LightGray)
-                    .clickable { showDateDialog = true }
                     .padding(8.dp)
             )
 
@@ -115,14 +113,6 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
                 }
             }
         }
-
-        CustomDatePickerDialog(
-            showDialog = showDateDialog,
-            onDismiss = { showDateDialog = false },
-            onDateSelected = {
-                selectedMonth = it.substring(0, 7)
-            }
-        )
 
         Spacer(modifier = Modifier.height(16.dp))
 

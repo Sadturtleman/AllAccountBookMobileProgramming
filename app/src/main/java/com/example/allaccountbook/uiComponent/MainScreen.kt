@@ -20,6 +20,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.allaccountbook.database.model.TransactionDetail
 import com.example.allaccountbook.model.BorrowType
+import com.example.allaccountbook.uiComponent.model.YearMonthPickerDialog
 import com.example.allaccountbook.uiPersistent.BottomNavBar
 import com.example.allaccountbook.uiPersistent.CustomDatePickerDialog
 import com.example.allaccountbook.uiPersistent.formatWithCommas
@@ -134,7 +135,7 @@ fun MainScreen(
                 }
             }
 
-            CustomDatePickerDialog(
+            YearMonthPickerDialog(
                 showDialog = showDateDialog,
                 onDismiss = { showDateDialog = false },
                 onDateSelected = {
@@ -152,17 +153,18 @@ fun MainScreen(
                     navController.navigate("savingDetail")
                 }
                 InfoRow("투자 총계", formatWithCommas(getTotalInvestments)) {
-                    navController.navigate("investmentDetail/$selectedDate")
-                }
+                navController.navigate("investmentDetail/${formatDateToDisplay(selectedDate)}")
+            }
                 InfoRow("사용 가능 금액", formatWithCommas(getAvailableBalance)) {
-                    navController.navigate("availableDetail/$selectedDate")
+                    navController.navigate("availableDetail/${formatDateToDisplay(selectedDate)}")
                 }
                 InfoRow("빌린 전체 금액", formatWithCommas(getTotalLentAmount)) {
-                    navController.navigate("lendBorrowList/$selectedDate")
+                    navController.navigate("lendBorrowList/${formatDateToDisplay(selectedDate)}")
                 }
                 InfoRow("빌려준 금액", formatWithCommas(getTotalBorrowedAmount)) {
-                    navController.navigate("lendBorrowList/$selectedDate")
+                    navController.navigate("lendBorrowList/${formatDateToDisplay(selectedDate)}")
                 }
+
             }
 
             Column(
@@ -213,4 +215,14 @@ fun Date.toYearMonth(): YearMonth {
         .atZone(ZoneId.systemDefault())
         .toLocalDate()
         .let { YearMonth.of(it.year, it.month) }
+}
+
+fun formatDateToDisplay(date: String): String {
+    return try {
+        val parser = SimpleDateFormat("yyyy-MM", Locale.KOREA)
+        val formatter = SimpleDateFormat("yyyy년 M월", Locale.KOREA)
+        formatter.format(parser.parse(date)!!)
+    } catch (e: Exception) {
+        date // 예외 시 원본 반환
+    }
 }

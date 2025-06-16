@@ -55,7 +55,7 @@ class TransactionViewModel @Inject constructor(
                         price = 29000,
                         name = "스타벅스",
                         date = Calendar.getInstance().apply { set(2025, 4, 5) }.time,
-                        category = "음식"
+                        category = "음식점"
                     ),
                     latitude = null,
                     longitude = null
@@ -66,7 +66,7 @@ class TransactionViewModel @Inject constructor(
                         price = 45000,
                         name = "홈플러스",
                         date = Calendar.getInstance().apply { set(2025, 4, 12) }.time,
-                        category = "쇼핑"
+                        category = "문화시설"
                     ),
                     latitude = null,
                     longitude = null

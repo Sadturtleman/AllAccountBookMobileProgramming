@@ -1,5 +1,6 @@
 package com.example.allaccountbook.uiComponent.available
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,7 +23,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.allaccountbook.database.model.TransactionDetail
 import com.example.allaccountbook.uiComponent.toYearMonth
 import com.example.allaccountbook.uiPersistent.BottomNavBar
-import com.example.allaccountbook.uiPersistent.CustomDatePickerDialog
 import com.example.allaccountbook.viewmodel.view.AvailableViewModel
 import com.example.allaccountbook.viewmodel.view.TransactionViewModel
 import java.text.SimpleDateFormat
@@ -43,10 +43,9 @@ data class MonthlyCategoryInfo(
 @Composable
 fun AvailableDetailScreenPreview() {
     val navController = rememberNavController()
-    AvailableDetailScreen(navController, "2025-05")
+    AvailableDetailScreen(navController, "2025년 5월")
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AvailableDetailScreen(
     navController: NavController,
@@ -54,78 +53,75 @@ fun AvailableDetailScreen(
     transactionViewModel: TransactionViewModel = hiltViewModel(),
     availableViewModel: AvailableViewModel = viewModel()
 ) {
-    var selectedMonth by remember { mutableStateOf(selectedDate) }
-    var showDateDialog by remember { mutableStateOf(false) }
     var editingCategory by remember { mutableStateOf<String?>(null) }
     var input by remember { mutableStateOf("") }
 
+    val selectedMonth = selectedDate // 텍스트만 표시
     val selectedYearMonth = remember(selectedMonth) {
-        YearMonth.parse(selectedMonth)
+        try {
+            val parsed = SimpleDateFormat("yyyy년 M월", Locale.KOREA).parse(selectedMonth)
+            val formatted = SimpleDateFormat("yyyy-MM", Locale.KOREA).format(parsed!!)
+            YearMonth.parse(formatted)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     val transactions = transactionViewModel.transactions.collectAsState()
     val predefinedCategories = listOf("음식점", "문화시설")
-
     val categoryAmountMap = availableViewModel.categoryAmountMap
 
     LaunchedEffect(Unit) {
         (predefinedCategories + "기타").forEach { availableViewModel.loadAmount(it) }
     }
 
-    val monthlyCategoryInfoList = remember(transactions.value, selectedYearMonth, categoryAmountMap) {
-        val expenseList = transactions.value
-            .filterIsInstance<TransactionDetail.Expense>()
-            .map { it.data }
-            .filter { selectedYearMonth == it.date.toYearMonth() }
+    val monthlyCategoryInfoList =
+        remember(transactions.value, selectedYearMonth, categoryAmountMap) {
+            val expenseList = transactions.value
+                .filterIsInstance<TransactionDetail.Expense>()
+                .map { it.data }
+                .filter { selectedYearMonth != null && it.date.toYearMonth() == selectedYearMonth }
 
-        buildList {
-            for (category in predefinedCategories) {
-                val spent = expenseList.filter { it.category == category }.sumOf { it.price }
-                val max = categoryAmountMap[category] ?: 0
+            buildList {
+                for (category in predefinedCategories) {
+                    val spent = expenseList.filter { it.category == category }.sumOf { it.price }
+                    val max = categoryAmountMap[category] ?: 0
+                    add(
+                        MonthlyCategoryInfo(
+                            month = selectedMonth,
+                            categoryName = category,
+                            remainingAmount = (max - spent).coerceAtLeast(0),
+                            maxAmount = max
+                        )
+                    )
+                }
+
+                val otherSpent =
+                    expenseList.filter { it.category !in predefinedCategories }.sumOf { it.price }
+                val max = categoryAmountMap["기타"] ?: 0
                 add(
                     MonthlyCategoryInfo(
                         month = selectedMonth,
-                        categoryName = category,
-                        remainingAmount = (max - spent).coerceAtLeast(0),
+                        categoryName = "기타",
+                        remainingAmount = (max - otherSpent).coerceAtLeast(0),
                         maxAmount = max
                     )
                 )
             }
-
-            val otherSpent = expenseList.filter { it.category !in predefinedCategories }.sumOf { it.price }
-            val max = categoryAmountMap["기타"] ?: 0
-            add(
-                MonthlyCategoryInfo(
-                    month = selectedMonth,
-                    categoryName = "기타",
-                    remainingAmount = (max - otherSpent).coerceAtLeast(0),
-                    maxAmount = max
-                )
-            )
         }
-    }
 
     val averagePercent = if (monthlyCategoryInfoList.isEmpty()) 0
     else monthlyCategoryInfoList.map { it.remainingPercent }.average().toInt()
 
     val totalRemaining = monthlyCategoryInfoList.sumOf { it.remainingAmount }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = selectedMonth,
-                modifier = Modifier.clickable { showDateDialog = true }.padding(8.dp),
-                style = MaterialTheme.typography.bodyLarge
-            )
-        }
-
-        CustomDatePickerDialog(
-            showDialog = showDateDialog,
-            onDismiss = { showDateDialog = false },
-            onDateSelected = {
-                val parsed = SimpleDateFormat("yyyy년 M월", Locale.KOREA).parse(it)
-                selectedMonth = SimpleDateFormat("yyyy-MM", Locale.KOREA).format(parsed)
-            }
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp)) {
+        Text(
+            text = selectedMonth,
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
 
         Box(
@@ -153,6 +149,7 @@ fun AvailableDetailScreen(
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text("카테고리", fontWeight = FontWeight.SemiBold)
+            Text("설정 금액", fontWeight = FontWeight.SemiBold)
             Text("남은 금액", fontWeight = FontWeight.SemiBold)
             Text("남은 비율", fontWeight = FontWeight.SemiBold)
         }
@@ -164,16 +161,29 @@ fun AvailableDetailScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { editingCategory = item.categoryName }
                         .padding(vertical = 6.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(item.categoryName)
+                    Text(
+                        item.categoryName,
+                        modifier = Modifier
+                            .clickable { navController.navigate("categoryMonthlyDetail/$selectedDate/${item.categoryName}") }
+                    )
+
+                    Text(
+                        text = "${item.maxAmount}원",
+                        modifier = Modifier
+                            .clickable { editingCategory = item.categoryName }
+                            .background(Color(0xFFE0F7FA), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    )
+
                     Text("${item.remainingAmount}원")
+
                     Text(
                         "${item.remainingPercent}%",
                         modifier = Modifier
-                            .background(Color(0xFFA8F0A3))
+                            .background(Color(0xFFA8F0A3), RoundedCornerShape(4.dp))
                             .padding(horizontal = 8.dp, vertical = 2.dp)
                     )
                 }
@@ -214,7 +224,7 @@ fun AvailableDetailScreen(
                     Text("취소")
                 }
             },
-            title = { Text("${editingCategory} 금액 설정") },
+            title = { Text("${editingCategory} 설정 금액 변경") },
             text = {
                 OutlinedTextField(
                     value = input,
