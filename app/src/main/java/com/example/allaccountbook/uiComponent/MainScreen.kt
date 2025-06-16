@@ -115,6 +115,9 @@ fun MainScreen(
         derivedStateOf { borrowList.sumOf { it.price } }
     }
 
+    val fixedExpenseList = expenseList.filter { it.data.isFixed }
+    val fixedIncomeList = incomeList.filter { it.data.isFixed }
+
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween,
@@ -189,6 +192,43 @@ fun MainScreen(
                     Text("전화번호 등록")
                 }
             }
+
+            Spacer(Modifier.height(15.dp))
+            Text("수입 / 지출 현황", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            if (fixedExpenseList.isNotEmpty() || fixedIncomeList.isNotEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text("📌 고정비 상세 목록", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+
+                    if (fixedExpenseList.isNotEmpty()) {
+                        Text("💸 고정 지출", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                        fixedExpenseList.forEach {
+                            val item = it.data
+                            val formattedDate = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(item.date)
+                            Text("[${item.category}] ${item.name} | ${formatWithCommas(item.price)}원 | $formattedDate")
+                        }
+                    }
+
+                    if (fixedIncomeList.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("💰 고정 수입", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                        fixedIncomeList.forEach {
+                            val item = it.data
+                            val formattedDate = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(item.date)
+                            Text("[${item.category}] ${item.name} | +${formatWithCommas(item.price)}원 | $formattedDate")
+                        }
+                    }
+                }
+            }
+
+
+
         }
 
         BottomNavBar(

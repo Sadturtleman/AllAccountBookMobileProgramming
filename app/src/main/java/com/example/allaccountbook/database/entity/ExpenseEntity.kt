@@ -30,5 +30,6 @@ data class ExpenseEntity(
     var price : Int,
     var name : String,
     var date : Date,
-    var category: String
+    var category: String,
+    var isFixed : Boolean = false
 )

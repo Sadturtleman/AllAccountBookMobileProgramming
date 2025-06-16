@@ -1,4 +1,5 @@
 package com.example.allaccountbook.uiComponent.add
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -42,6 +43,8 @@ fun AddBorrowItemScreen(
     var showDatePickerDialog by remember { mutableStateOf(false) }
     var selectedType by remember { mutableStateOf(AddType.BORROWED) }
     var category by remember { mutableStateOf("") } // 分类字段
+    var isFixed by remember { mutableStateOf(false) }
+    var fixedMonths by remember { mutableStateOf(1) } // 기본 1개월
 
     Column(
         modifier = Modifier
@@ -72,7 +75,7 @@ fun AddBorrowItemScreen(
             OutlinedTextField(
                 value = category,
                 onValueChange = { category = it },
-                label = { Text("카테고리(예: 음식, 교통, 기타)") },
+                label = { Text("카테고리(예: 음식점, 문화시설, 기타)") },
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -107,8 +110,10 @@ fun AddBorrowItemScreen(
                 showDialog = showDatePickerDialog,
                 onDismiss = { showDatePickerDialog = false },
                 onDateSelected = { selectedDateString ->
-                    val parsedDate = SimpleDateFormat("yyyy년 M월 d일", Locale.KOREA).parse(selectedDateString)
-                    val formatted = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(parsedDate!!)
+                    val parsedDate =
+                        SimpleDateFormat("yyyy년 M월 d일", Locale.KOREA).parse(selectedDateString)
+                    val formatted =
+                        SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(parsedDate!!)
                     date = formatted
                     showDatePickerDialog = false
                 }
@@ -124,54 +129,106 @@ fun AddBorrowItemScreen(
                 selectedType = selectedType,
                 onSelect = { selectedType = it }
             )
-        }
 
+        }
+        if (selectedType == AddType.INCOME || selectedType == AddType.EXPENSE) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("고정비 여부:")
+                Switch(checked = isFixed, onCheckedChange = { isFixed = it })
+            }
+
+            if (isFixed) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("지속 개월 수:")
+                    DropdownMenuMonthSelector(
+                        selectedMonth = fixedMonths,
+                        onSelect = { fixedMonths = it }
+                    )
+                }
+            }
+        }
         Button(
             onClick = {
                 try {
                     val parsedDate = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).parse(date)
-                    when (selectedType) {
-                        AddType.BORROWED, AddType.BORROW -> {
-                            val newBorrow = BorrowMoney(
-                                id = 0,
-                                type = if (selectedType == AddType.BORROWED) BorrowType.BORROWED else BorrowType.BORROW,
-                                person = person,
-                                price = price.toIntOrNull() ?: 0,
-                                date = parsedDate ?: Date(),
-                                reason = reason,
-                                finished = false
-                            )
-                            borrowViewModel.addBorrow(newBorrow)
+                    val baseDate = parsedDate ?: Date()
+                    val baseCalendar = Calendar.getInstance().apply {
+                        time = baseDate
+                    }
+                    val originalDay = baseCalendar.get(Calendar.DAY_OF_MONTH)
+
+                    val repeatCount =
+                        if ((selectedType == AddType.INCOME || selectedType == AddType.EXPENSE) && isFixed) fixedMonths else 1
+
+                    for (i in 0 until repeatCount) {
+                        val calendar = Calendar.getInstance().apply {
+                            time = baseDate
+                            add(Calendar.MONTH, i)
+                            set(Calendar.DAY_OF_MONTH, 1)
+                            val maxDay = getActualMaximum(Calendar.DAY_OF_MONTH)
+                            set(Calendar.DAY_OF_MONTH, minOf(originalDay, maxDay))
                         }
-                        AddType.EXPENSE -> {
-                            transactionViewModel.viewModelScope.launch {
-                                transactionViewModel.addExpense(
-                                    ExpenseEntity(
-                                        expenseId = 0,
-                                        transactionId = 0,
+
+                        val currentDate = calendar.time
+
+                        when (selectedType) {
+                            AddType.BORROWED, AddType.BORROW -> {
+                                if (i == 0) { // 고정비 아님
+                                    val newBorrow = BorrowMoney(
+                                        id = 0,
+                                        type = if (selectedType == AddType.BORROWED) BorrowType.BORROWED else BorrowType.BORROW,
+                                        person = person,
                                         price = price.toIntOrNull() ?: 0,
-                                        name = reason,
-                                        date = parsedDate ?: Date(),
-                                        category = if (category.isNotBlank()) category else "기타"
+                                        date = currentDate,
+                                        reason = reason,
+                                        finished = false
                                     )
-                                )
+                                    borrowViewModel.addBorrow(newBorrow)
+                                }
                             }
-                        }
-                        AddType.INCOME -> {
-                            transactionViewModel.viewModelScope.launch {
-                                transactionViewModel.addIncome(
-                                    IncomeEntity(
-                                        incomeId = 0,
-                                        transactionId = 0,
-                                        price = price.toIntOrNull() ?: 0,
-                                        name = reason,
-                                        date = parsedDate ?: Date(),
-                                        category = if (category.isNotBlank()) category else "기타"
+
+                            AddType.EXPENSE -> {
+                                transactionViewModel.viewModelScope.launch {
+                                    transactionViewModel.addExpense(
+                                        ExpenseEntity(
+                                            expenseId = 0,
+                                            transactionId = 0,
+                                            price = price.toIntOrNull() ?: 0,
+                                            name = reason,
+                                            date = currentDate,
+                                            category = if (category.isNotBlank()) category else "기타",
+                                            isFixed = isFixed
+                                        )
                                     )
-                                )
+                                }
+                            }
+
+                            AddType.INCOME -> {
+                                transactionViewModel.viewModelScope.launch {
+                                    transactionViewModel.addIncome(
+                                        IncomeEntity(
+                                            incomeId = 0,
+                                            transactionId = 0,
+                                            price = price.toIntOrNull() ?: 0,
+                                            name = reason,
+                                            date = currentDate,
+                                            category = if (category.isNotBlank()) category else "기타",
+                                            isFixed = isFixed
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
+
                     navController.popBackStack()
                 } catch (e: Exception) {
                     // TODO: 오류 처리
@@ -207,6 +264,32 @@ fun DropdownMenuTypeSelector(
                     text = { Text(label) },
                     onClick = {
                         onSelect(type)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun DropdownMenuMonthSelector(
+    selectedMonth: Int,
+    onSelect: (Int) -> Unit
+) {
+    val options = (1..24).toList()
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        OutlinedButton(onClick = { expanded = true }) {
+            Text("${selectedMonth}개월")
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { month ->
+                DropdownMenuItem(
+                    text = { Text("$month 개월") },
+                    onClick = {
+                        onSelect(month)
                         expanded = false
                     }
                 )

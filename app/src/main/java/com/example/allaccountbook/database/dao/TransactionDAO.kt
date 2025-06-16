@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.allaccountbook.database.entity.TransactionEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TransactionDAO {
@@ -20,5 +21,5 @@ interface TransactionDAO {
     suspend fun UpdateTransaction(entity: TransactionEntity)
 
     @Query("SELECT * FROM `Transaction`")
-    suspend fun getAllTransaction(): List<TransactionEntity>
+    fun getAllTransaction(): Flow<List<TransactionEntity>>
 }

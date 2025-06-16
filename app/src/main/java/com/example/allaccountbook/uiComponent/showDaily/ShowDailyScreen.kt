@@ -19,6 +19,7 @@ import androidx.navigation.NavController
 import com.example.allaccountbook.database.model.getAmount
 import com.example.allaccountbook.database.model.getDate
 import com.example.allaccountbook.database.model.getCategory
+import com.example.allaccountbook.uiComponent.model.YearMonthPickerDialog
 import com.example.allaccountbook.uiPersistent.BottomNavBar
 import com.example.allaccountbook.uiPersistent.formatWithCommas
 import com.example.allaccountbook.uiPersistent.showDate
@@ -43,7 +44,7 @@ fun ShowDailyScreen(
 
 
 
-    val dateFormatter = DateTimeFormatter.ofPattern("yyyy년 MM월", Locale.KOREA)
+    val dateFormatter = DateTimeFormatter.ofPattern("yyyy년 M월", Locale.KOREA)
     var selectedMonth by rememberSaveable {
         mutableStateOf(LocalDate.now().format(dateFormatter))
     }
@@ -92,6 +93,7 @@ fun ShowDailyScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         // 날짜 선택
+        // 날짜 선택
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -104,30 +106,13 @@ fun ShowDailyScreen(
         }
 
         if (showDateDialog) {
-            val datePickerState = rememberDatePickerState()
-            DatePickerDialog(
-                onDismissRequest = { showDateDialog = false },
-                confirmButton = {
-                    OutlinedButton(onClick = {
-                        val millis = datePickerState.selectedDateMillis
-                        if (millis != null) {
-                            val date = Date(millis)
-                            val format = SimpleDateFormat("yyyy년 MM월", Locale.KOREA)
-                            selectedMonth = format.format(date)
-                        }
-                        showDateDialog = false
-                    }) {
-                        Text("확인")
-                    }
-                },
-                dismissButton = {
-                    OutlinedButton(onClick = { showDateDialog = false }) {
-                        Text("취소")
-                    }
+            YearMonthPickerDialog(
+                showDialog = showDateDialog,
+                onDismiss = { showDateDialog = false },
+                onDateSelected = { newMonth ->
+                    selectedMonth = newMonth
                 }
-            ) {
-                DatePicker(state = datePickerState)
-            }
+            )
         }
 
         // 카테고리 필터
