@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 
 @Composable
 fun RootNavGraph(navController : NavHostController) {
-    NavHost(navController = navController, startDestination = "login"){
+    NavHost(navController = navController, startDestination = "main"){
         LoginNavGraph(navController)
         NavBottonBarGraph(navController)
     }
