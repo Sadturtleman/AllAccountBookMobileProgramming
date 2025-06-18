@@ -5,7 +5,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.example.allaccountbook.uiComponent.MainScreen
-import com.example.allaccountbook.uiComponent.PhoneRegisterScreen
+import com.example.allaccountbook.uiComponent.SMS.PhoneRegisterScreen
 import com.example.allaccountbook.uiComponent.add.AddBorrowItemScreen
 import com.example.allaccountbook.uiComponent.available.AvailableDetailScreen
 import com.example.allaccountbook.uiComponent.available.CategoryDetailScreen
