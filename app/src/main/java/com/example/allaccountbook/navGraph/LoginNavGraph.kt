@@ -5,7 +5,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.example.allaccountbook.uiComponent.MainScreen
-import com.example.allaccountbook.uiComponent.PhoneRegisterScreen
+import com.example.allaccountbook.uiComponent.SMS.PhoneRegisterScreen
 import com.example.allaccountbook.uiComponent.add.AddBorrowItemScreen
 import com.example.allaccountbook.uiComponent.available.AvailableDetailScreen
 import com.example.allaccountbook.uiComponent.available.CategoryDetailScreen
@@ -96,7 +96,11 @@ fun NavGraphBuilder.LoginNavGraph(navController: NavHostController) {
     }
 
     // 저축 금액 "자세히 보기" 페이지
-    composable("savingAmountDetail") { SavingAmountDetailScreen(navController) }
+    composable("savingAmountDetail/{savingName}") {
+        val name = it.arguments?.getString("savingName") ?: ""
+
+        SavingAmountDetailScreen(navController = navController, savingName = name)
+    }
 
     composable("addBorrow") { AddBorrowItemScreen(navController) }
 

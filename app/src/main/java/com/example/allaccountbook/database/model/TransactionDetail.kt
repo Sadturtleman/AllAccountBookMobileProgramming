@@ -8,6 +8,9 @@ import com.example.allaccountbook.database.entity.TransactionEntity
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.time.ZoneId
+import java.time.LocalDate
+
 
 sealed class TransactionDetail(
     val type: TransactionType,
@@ -30,7 +33,7 @@ sealed class TransactionDetail(
     ) : TransactionDetail(TransactionType.INCOME, latitude, longitude)
 
     data class Invest(
-        val data : InvestEntity
+        val data: InvestEntity
     ) : TransactionDetail(TransactionType.INVEST, null, null)
 }
 
@@ -46,6 +49,19 @@ private fun formatDate(date: Date): String {
     return sdf.format(date)
 }
 
+fun TransactionDetail.getLocalDate(): LocalDate = when (this) {
+    is TransactionDetail.Expense -> this.data.date.toInstant().atZone(ZoneId.systemDefault())
+        .toLocalDate()
+
+    is TransactionDetail.Income -> this.data.date.toInstant().atZone(ZoneId.systemDefault())
+        .toLocalDate()
+
+    is TransactionDetail.Saving -> this.data.startDate.toInstant().atZone(ZoneId.systemDefault())
+        .toLocalDate()
+
+    is TransactionDetail.Invest -> this.data.date.toInstant().atZone(ZoneId.systemDefault())
+        .toLocalDate()
+}
 
 fun TransactionDetail.getAmount(): Int = when (this) {
     is TransactionDetail.Expense -> this.data.price

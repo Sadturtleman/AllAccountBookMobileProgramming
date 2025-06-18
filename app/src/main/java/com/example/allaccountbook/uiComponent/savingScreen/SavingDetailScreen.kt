@@ -1,33 +1,23 @@
 package com.example.allaccountbook.uiComponent.savingScreen
 
+
+import android.content.Context
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Divider
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.allaccountbook.database.model.TransactionDetail
 import com.example.allaccountbook.uiPersistent.BottomNavBar
@@ -41,6 +31,7 @@ fun SavingDetailScreenPreview() {
     val navController = rememberNavController()
     SavingDetailScreen(navController)
 }
+
 data class SavingLog(
     var name: String,
     val date: String,
@@ -48,18 +39,31 @@ data class SavingLog(
 )
 
 @Composable
-fun SavingDetailScreen(navController: NavController, viewmodel : TransactionViewModel = hiltViewModel()) {
-    val allList by viewmodel.transactions.collectAsState()
+fun SavingDetailScreen(
+    navController: NavController,
+    viewmodel: TransactionViewModel = hiltViewModel()
+) {
+    val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences("goal_prefs", Context.MODE_PRIVATE) }
 
+    var goalName by remember {
+        mutableStateOf(prefs.getString("goal_name", "여행") ?: "여행")
+    }
+    var goalAmount by remember {
+        mutableIntStateOf(prefs.getInt("goal_amount", 100000))
+    }
+
+    val allList by viewmodel.transactions.collectAsState()
     val savingList = allList.filterIsInstance<TransactionDetail.Saving>()
 
     val goal = SavingGoal(
-        name = "여행",
-        goalAmount = 100000,
-        currentAmount = 60000,
+        name = goalName,
+        goalAmount = goalAmount,
+        currentAmount = savingList.sumOf { it.data.price },
         deadline = "2025-12-31"
     )
-    val logs = savingList.map{
+
+    val logs = savingList.map {
         SavingLog(
             name = it.data.name,
             date = SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREA).format(it.data.startDate),
@@ -68,19 +72,49 @@ fun SavingDetailScreen(navController: NavController, viewmodel : TransactionView
     }
 
     val achievementRate = goal.achievementRate
-
     var showGoalDialog by remember { mutableStateOf(false) }
     var showAmountDialog by remember { mutableStateOf(false) }
-
+    var showNameDialog by remember { mutableStateOf(false) }
+    var showGoalAmountDialog by remember { mutableStateOf(false) }
+    var selectedLog by remember { mutableStateOf<SavingLog?>(null) }
 
     if (showGoalDialog) {
         SavingGoalDialog(goal = goal, onDismiss = { showGoalDialog = false })
     }
-
-    if (showAmountDialog) {
+    if (showAmountDialog && selectedLog != null) {
         SavingAmountDialog(
             navController = navController,
-            onDismiss = { showAmountDialog = false }
+            onDismiss = { showAmountDialog = false },
+            onConfirm = { newAmount, newName ->
+                goalAmount = newAmount
+                prefs.edit().putInt("goal_amount", newAmount).apply()
+                showAmountDialog = false
+            },
+            savingName = selectedLog!!.name,
+            amount = selectedLog!!.amount
+        )
+    }
+    if (showNameDialog) {
+        SavingNameDialog(
+            currentName = goalName,
+            onDismiss = { showNameDialog = false },
+            onConfirm = { newName ->
+                goalName = newName
+                prefs.edit().putString("goal_name", newName).apply()
+                showNameDialog = false
+            }
+        )
+    }
+
+    if (showGoalAmountDialog) {
+        GoalAmountDialog(
+            currentAmount = goalAmount,
+            onDismiss = { showGoalAmountDialog = false },
+            onConfirm = { newAmount ->
+                goalAmount = newAmount
+                prefs.edit().putInt("goal_amount", newAmount).apply()
+                showGoalAmountDialog = false
+            }
         )
     }
 
@@ -89,44 +123,63 @@ fun SavingDetailScreen(navController: NavController, viewmodel : TransactionView
             .fillMaxSize()
             .padding(16.dp)
     ) {
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("목표명", modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center, fontWeight = FontWeight.SemiBold)
-            Text("목표 금액", modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center, fontWeight = FontWeight.SemiBold)
-            Text("달성률", modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center, fontWeight = FontWeight.SemiBold)
+            Text(
+                "목표명",
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                "목표 금액",
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                "달성률",
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.SemiBold
+            )
         }
-
         Spacer(modifier = Modifier.height(6.dp))
-
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(goal.name, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-            Text("${goal.goalAmount}원", modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            Text(
+                goal.name, modifier = Modifier
+                    .weight(1f)
+                    .clickable { showNameDialog = true }, textAlign = TextAlign.Center
+            )
+            Text("${goal.goalAmount}원", modifier = Modifier
+                .weight(1f)
+                .clickable {
+                    showGoalAmountDialog = true
+                }, textAlign = TextAlign.Center)
             Column(modifier = Modifier.weight(1f)) {
-                Text("${achievementRate}%", textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                Text("${achievementRate}%", textAlign = TextAlign.Center)
                 LinearProgressIndicator(
                     progress = (achievementRate / 100f).coerceIn(0f, 1f),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(8.dp)
-                        .clickable { showGoalDialog = true },
+                        .clickable {
+                            selectedLog = logs.firstOrNull()
+                            showGoalDialog = true
+                        },
                     color = Color(0xFFA8F0A3),
                     trackColor = Color.LightGray
                 )
             }
         }
-
         Spacer(modifier = Modifier.height(12.dp))
         Divider(thickness = 1.dp, color = Color.Gray)
         Spacer(modifier = Modifier.height(8.dp))
-
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -135,9 +188,7 @@ fun SavingDetailScreen(navController: NavController, viewmodel : TransactionView
             Text("저축 날짜", fontWeight = FontWeight.SemiBold)
             Text("저축 금액", fontWeight = FontWeight.SemiBold)
         }
-
         Spacer(modifier = Modifier.height(8.dp))
-
         LazyColumn {
             items(logs) { log ->
                 Row(
@@ -150,7 +201,10 @@ fun SavingDetailScreen(navController: NavController, viewmodel : TransactionView
                     Text(log.date)
                     Text(
                         "${log.amount}원",
-                        modifier = Modifier.clickable { showAmountDialog = true }
+                        modifier = Modifier.clickable {
+                            selectedLog = log
+                            showAmountDialog = true
+                        }
                     )
                 }
             }
@@ -163,4 +217,3 @@ fun SavingDetailScreen(navController: NavController, viewmodel : TransactionView
         )
     }
 }
-

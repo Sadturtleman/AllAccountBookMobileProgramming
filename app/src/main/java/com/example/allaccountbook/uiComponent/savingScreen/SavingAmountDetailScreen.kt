@@ -15,14 +15,21 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.allaccountbook.database.model.TransactionDetail
 import com.example.allaccountbook.uiPersistent.BottomNavBar
-
+import com.example.allaccountbook.viewmodel.view.TransactionViewModel
+import java.text.SimpleDateFormat
+import java.util.Locale
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 @Preview(showBackground = true)
 @Composable
@@ -31,31 +38,35 @@ fun SavingAmountDetailScreenPreview() {
 }
 data class SavingDetailLog(
     val date: String,
-    val amount: Int,
-    val method: String
+    val amount: Int
 )
 
 @Composable
-fun SavingAmountDetailScreen(navController: NavController) {
-
-    val savingName = "여행 적금"
-    val logs = listOf(
-        SavingDetailLog("2025-05-01", 30000, "통장"),
-        SavingDetailLog("2025-05-15", 30000, "카드")
-    )
+fun SavingAmountDetailScreen(
+    navController: NavController,
+    savingName: String,
+    viewmodel: TransactionViewModel = hiltViewModel()
+) {
+    val allList by viewmodel.transactions.collectAsState()
+    val logs = allList.filterIsInstance<TransactionDetail.Saving>()
+        .filter { it.data.name == savingName }
+        .map {
+            SavingDetailLog(
+                date = SimpleDateFormat("yyyy년 M월 d일", Locale.KOREA).format(it.data.startDate),
+                amount = it.data.price
+            )
+        }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-
         Text(
             text = savingName,
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-
 
         Row(
             modifier = Modifier
@@ -65,11 +76,9 @@ fun SavingAmountDetailScreen(navController: NavController) {
         ) {
             Text("날짜", fontWeight = FontWeight.Bold)
             Text("금액", fontWeight = FontWeight.Bold)
-            Text("방식", fontWeight = FontWeight.Bold)
         }
 
         Spacer(modifier = Modifier.height(4.dp))
-
 
         LazyColumn {
             items(logs) { log ->
@@ -81,11 +90,11 @@ fun SavingAmountDetailScreen(navController: NavController) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(log.date)
-                    Text("${log.amount}원")
-                    Text(log.method)
+                    Text("%,d원".format(log.amount))
                 }
             }
         }
+
         Spacer(modifier = Modifier.weight(1f))
         BottomNavBar(
             onHomeNavigate = { navController.navigate("home") },

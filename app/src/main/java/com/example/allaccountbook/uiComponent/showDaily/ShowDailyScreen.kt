@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.allaccountbook.database.model.TransactionDetail
 import com.example.allaccountbook.database.model.getAmount
 import com.example.allaccountbook.database.model.getDate
 import com.example.allaccountbook.database.model.getCategory
@@ -25,14 +26,16 @@ import com.example.allaccountbook.uiPersistent.formatWithCommas
 import com.example.allaccountbook.uiPersistent.showDate
 import com.example.allaccountbook.viewmodel.view.BorrowViewModel
 import com.example.allaccountbook.viewmodel.view.TransactionViewModel
+import com.google.accompanist.pager.*
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import java.util.Date
-import java.util.Locale
+import java.time.temporal.ChronoUnit
+import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @Composable
 fun ShowDailyScreen(
     viewModel: TransactionViewModel = hiltViewModel(),
@@ -41,41 +44,27 @@ fun ShowDailyScreen(
 ) {
     val usedCategories = remember { mutableStateListOf<String>() }
     val selectedCategories = remember { mutableStateListOf<String>() }
+    val coroutineScope = rememberCoroutineScope()
 
+    val initialPage = 60
+    val pagerState = rememberPagerState(initialPage = initialPage)
 
-
-    val dateFormatter = DateTimeFormatter.ofPattern("yyyy년 M월", Locale.KOREA)
-    var selectedMonth by rememberSaveable {
-        mutableStateOf(LocalDate.now().format(dateFormatter))
+    val currentDate by remember(pagerState.currentPage) {
+        derivedStateOf {
+            LocalDate.now().withDayOfMonth(1).plusMonths((pagerState.currentPage - initialPage).toLong())
+        }
     }
 
+    val selectedMonth = currentDate.format(DateTimeFormatter.ofPattern("yyyy년 M월", Locale.KOREA))
     var showDateDialog by remember { mutableStateOf(false) }
-    val parsedDate = YearMonth.parse(selectedMonth, dateFormatter).atDay(1)
-    val yearMonth = YearMonth.from(parsedDate)
-    val daysInMonth = yearMonth.lengthOfMonth()
-    val startDayOfWeek = parsedDate.dayOfWeek.value % 7
-
     val transactions by viewModel.transactions.collectAsState()
     val borrowList by borrowViewModel.borrowList.collectAsState()
 
-    val filteredData = transactions.filter { detail ->
-        val date = LocalDate.parse(detail.getDate())
-        val category = detail.getCategory()
-        (selectedCategories.isEmpty() || category in selectedCategories)
-        date.year == parsedDate.year &&
-                date.month == parsedDate.month &&
-                (selectedCategories.isEmpty() || category in selectedCategories)
-    }
-
-    val calendarRows = buildCalendarGrid(startDayOfWeek, daysInMonth)
-    var showChoiceDialog by remember { mutableStateOf(false) }
-    var clickedDate by remember { mutableStateOf("") }
-
-    LaunchedEffect(selectedMonth, transactions) {
+    LaunchedEffect(currentDate, transactions) {
         val currentMonthCategories = transactions
             .filter {
                 val date = LocalDate.parse(it.getDate())
-                date.year == parsedDate.year && date.month == parsedDate.month
+                date.year == currentDate.year && date.month == currentDate.month
             }
             .map { it.getCategory() }
             .distinct()
@@ -85,15 +74,10 @@ fun ShowDailyScreen(
         selectedCategories.retainAll(usedCategories)
     }
 
-
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // 날짜 선택
-        // 날짜 선택
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -110,131 +94,45 @@ fun ShowDailyScreen(
                 showDialog = showDateDialog,
                 onDismiss = { showDateDialog = false },
                 onDateSelected = { newMonth ->
-                    selectedMonth = newMonth
+                    val parsed = YearMonth.parse(newMonth, DateTimeFormatter.ofPattern("yyyy년 M월", Locale.KOREA)).atDay(1)
+                    val diff = ChronoUnit.MONTHS.between(LocalDate.now().withDayOfMonth(1), parsed)
+                    coroutineScope.launch {
+                        pagerState.scrollToPage(initialPage + diff.toInt())
+                    }
+                    showDateDialog = false
                 }
             )
         }
 
-        // 카테고리 필터
-        Column {
-            Text("📌 카테고리 필터:")
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                usedCategories.forEach { category ->
-                    FilterChip(
-                        selected = selectedCategories.contains(category),
-                        onClick = {
-                            if (selectedCategories.contains(category)) {
-                                selectedCategories.remove(category)
-                            } else {
-                                selectedCategories.add(category)
-                            }
-                        },
-                        label = { Text(category) }
-                    )
-                }
+        Row(
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            usedCategories.forEach { category ->
+                FilterChip(
+                    selected = selectedCategories.contains(category),
+                    onClick = {
+                        if (selectedCategories.contains(category)) selectedCategories.remove(category)
+                        else selectedCategories.add(category)
+                    },
+                    label = { Text(category) }
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // 📅 캘린더 UI
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-        ) {
-            // 요일 Row
-            Row(modifier = Modifier.fillMaxWidth()) {
-                listOf("일", "월", "화", "수", "목", "금", "토").forEach {
-                    Text(
-                        text = it,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .weight(1f)
-                            .wrapContentWidth(Alignment.CenterHorizontally)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // 날짜 그리드
-            calendarRows.forEach { week ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    week.forEach { day ->
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(100.dp)
-                                .padding(2.dp)
-                                .background(Color(0xFFF5F5F5), MaterialTheme.shapes.small)
-                                .let { mod ->
-                                    if (day != null) {
-                                        mod.clickable {
-                                            val dayStr = String.format(Locale.KOREA, "%02d", day)
-                                            val fullDate = "${parsedDate.year}-${parsedDate.monthValue.toString().padStart(2, '0')}-$dayStr"
-
-                                            val dailyTransactions = filteredData.filter { it.getDate() == fullDate }
-                                            val totalExpense = dailyTransactions.filter { it.type.name == "EXPENSE" }.sumOf { it.getAmount() }
-                                            val totalIncome = dailyTransactions.filter { it.type.name == "INCOME" }.sumOf { it.getAmount() }
-
-                                            val dailyBorrows = borrowList.filter {
-                                                SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(it.date) == fullDate
-                                            }
-                                            val totalBorrow = dailyBorrows.filter { it.type.name == "BORROW" }.sumOf { it.price }
-                                            val totalBorrowed = dailyBorrows.filter { it.type.name == "BORROWED" }.sumOf { it.price }
-
-                                            val hasSpend = totalExpense > 0 || totalIncome > 0
-                                            val hasBorrow = totalBorrow > 0 || totalBorrowed > 0
-
-                                            when {
-                                                hasSpend && hasBorrow -> {
-                                                    clickedDate = fullDate
-                                                    showChoiceDialog = true
-                                                }
-                                                hasSpend -> navController.navigate("dailyDetail/$fullDate")
-                                                hasBorrow -> navController.navigate("lendBorrowList/$fullDate")
-                                            }
-                                        }
-                                    } else mod
-                                },
-                            contentAlignment = Alignment.TopCenter
-                        ) {
-                            if (day != null) {
-                                val fullDate = "${parsedDate.year}-${parsedDate.monthValue.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}"
-                                val dailyTransactions = filteredData.filter { it.getDate() == fullDate }
-                                val totalExpense = dailyTransactions.filter { it.type.name == "EXPENSE" }.sumOf { it.getAmount() }
-                                val totalIncome = dailyTransactions.filter { it.type.name == "INCOME" }.sumOf { it.getAmount() }
-
-                                val dailyBorrows = borrowList.filter {
-                                    SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(it.date) == fullDate
-                                }
-                                val totalBorrow = dailyBorrows.filter { it.type.name == "BORROW" }.sumOf { it.price }
-                                val totalBorrowed = dailyBorrows.filter { it.type.name == "BORROWED" }.sumOf { it.price }
-
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text("$day", fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                                    Spacer(Modifier.height(4.dp))
-                                    if (totalExpense > 0) Text("${formatWithCommas(totalExpense)}원", fontSize = 12.sp, color = Color.Red)
-                                    if (totalIncome > 0) Text("${formatWithCommas(totalIncome)}원", fontSize = 12.sp, color = Color.Blue)
-                                    if (totalBorrow > 0) Text("빌림: ${formatWithCommas(totalBorrow)}원", fontSize = 12.sp, color = Color(0xFF6C3483))
-                                    if (totalBorrowed > 0) Text("빌려준: ${formatWithCommas(totalBorrowed)}원", fontSize = 12.sp, color = Color(0xFF2874A6))
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        HorizontalPager(
+            count = 120,
+            state = pagerState,
+            modifier = Modifier.weight(1f)
+        ) { page ->
+            val pageDate = LocalDate.now().withDayOfMonth(1).plusMonths((page - initialPage).toLong())
+            ShowMonthlyCalendar(
+                parsedDate = pageDate,
+                transactions = transactions,
+                borrowList = borrowList,
+                selectedCategories = selectedCategories,
+                navController = navController
+            )
         }
 
         BottomNavBar(
@@ -242,6 +140,116 @@ fun ShowDailyScreen(
             onDateNavigate = { navController.navigate("date") },
             onMapNavigate = { navController.navigate("map") }
         )
+    }
+}
+
+@Composable
+fun ShowMonthlyCalendar(
+    parsedDate: LocalDate,
+    transactions: List<TransactionDetail>,
+    borrowList: List<com.example.allaccountbook.model.BorrowMoney>,
+    selectedCategories: List<String>,
+    navController: NavController
+) {
+    val yearMonth = YearMonth.from(parsedDate)
+    val daysInMonth = yearMonth.lengthOfMonth()
+    val startDayOfWeek = parsedDate.dayOfWeek.value % 7
+    val filteredData = transactions.filter { detail ->
+        val date = LocalDate.parse(detail.getDate())
+        val category = detail.getCategory()
+        (selectedCategories.isEmpty() || category in selectedCategories) &&
+                date.year == parsedDate.year &&
+                date.month == parsedDate.month
+    }
+
+    val calendarRows = buildCalendarGrid(startDayOfWeek, daysInMonth)
+    var showChoiceDialog by remember { mutableStateOf(false) }
+    var clickedDate by remember { mutableStateOf("") }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            listOf("일", "월", "화", "수", "목", "금", "토").forEach {
+                Text(
+                    text = it,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        calendarRows.forEach { week ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                week.forEach { day ->
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(100.dp)
+                            .padding(2.dp)
+                            .background(Color(0xFFF5F5F5), MaterialTheme.shapes.small)
+                            .let { mod ->
+                                if (day != null) {
+                                    mod.clickable {
+                                        val dayStr = day.toString().padStart(2, '0')
+                                        val fullDate = "${parsedDate.year}-${parsedDate.monthValue.toString().padStart(2, '0')}-$dayStr"
+
+                                        val dailyTransactions = filteredData.filter { it.getDate() == fullDate }
+                                        val totalExpense = dailyTransactions.filter { it.type.name == "EXPENSE" }.sumOf { it.getAmount() }
+                                        val totalIncome = dailyTransactions.filter { it.type.name == "INCOME" }.sumOf { it.getAmount() }
+
+                                        val dailyBorrows = borrowList.filter {
+                                            SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(it.date) == fullDate
+                                        }
+                                        val totalBorrow = dailyBorrows.filter { it.type.name == "BORROW" }.sumOf { it.price }
+                                        val totalBorrowed = dailyBorrows.filter { it.type.name == "BORROWED" }.sumOf { it.price }
+
+                                        val hasSpend = totalExpense > 0 || totalIncome > 0
+                                        val hasBorrow = totalBorrow > 0 || totalBorrowed > 0
+
+                                        when {
+                                            hasSpend && hasBorrow -> {
+                                                clickedDate = fullDate
+                                                showChoiceDialog = true
+                                            }
+                                            hasSpend -> navController.navigate("dailyDetail/$fullDate")
+                                            hasBorrow -> navController.navigate("lendBorrowList/$fullDate")
+                                        }
+                                    }
+                                } else mod
+                            },
+                        contentAlignment = Alignment.TopCenter
+                    ) {
+                        if (day != null) {
+                            val fullDate = "${parsedDate.year}-${parsedDate.monthValue.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}"
+                            val dailyTransactions = filteredData.filter { it.getDate() == fullDate }
+                            val totalExpense = dailyTransactions.filter { it.type.name == "EXPENSE" }.sumOf { it.getAmount() }
+                            val totalIncome = dailyTransactions.filter { it.type.name == "INCOME" }.sumOf { it.getAmount() }
+
+                            val dailyBorrows = borrowList.filter {
+                                SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(it.date) == fullDate
+                            }
+                            val totalBorrow = dailyBorrows.filter { it.type.name == "BORROW" }.sumOf { it.price }
+                            val totalBorrowed = dailyBorrows.filter { it.type.name == "BORROWED" }.sumOf { it.price }
+
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("$day", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                Spacer(Modifier.height(4.dp))
+                                if (totalExpense > 0) Text("${formatWithCommas(totalExpense)}원", fontSize = 12.sp, color = Color.Red)
+                                if (totalIncome > 0) Text("${formatWithCommas(totalIncome)}원", fontSize = 12.sp, color = Color.Blue)
+                                if (totalBorrow > 0) Text("${formatWithCommas(totalBorrow)}원", fontSize = 12.sp, color = Color(0xFF6C3483))
+                                if (totalBorrowed > 0) Text("${formatWithCommas(totalBorrowed)}원", fontSize = 12.sp, color = Color(0xFF2874A6))
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     if (showChoiceDialog) {
