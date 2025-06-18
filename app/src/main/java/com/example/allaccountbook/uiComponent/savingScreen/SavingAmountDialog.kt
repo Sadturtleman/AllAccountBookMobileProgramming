@@ -72,7 +72,7 @@ fun SavingAmountDialog(
                 ) {
                     TextButton(onClick = {
                         onDismiss()
-                        navController.navigate("savingAmountDetail")
+                        navController.navigate("savingAmountDetail/$savingName")
                     }) {
                         Text("자세히 보기")
                     }

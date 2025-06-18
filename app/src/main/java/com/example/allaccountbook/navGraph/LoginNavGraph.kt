@@ -96,7 +96,11 @@ fun NavGraphBuilder.LoginNavGraph(navController: NavHostController) {
     }
 
     // 저축 금액 "자세히 보기" 페이지
-    composable("savingAmountDetail") { SavingAmountDetailScreen(navController) }
+    composable("savingAmountDetail/{savingName}") {
+        val name = it.arguments?.getString("savingName") ?: ""
+
+        SavingAmountDetailScreen(navController = navController, savingName = name)
+    }
 
     composable("addBorrow") { AddBorrowItemScreen(navController) }
 
