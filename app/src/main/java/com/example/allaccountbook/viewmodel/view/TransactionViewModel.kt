@@ -1,6 +1,7 @@
 package com.example.allaccountbook.viewmodel.view
 
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.allaccountbook.database.entity.ExpenseEntity
@@ -8,22 +9,20 @@ import com.example.allaccountbook.database.entity.IncomeEntity
 import com.example.allaccountbook.database.entity.InvestEntity
 import com.example.allaccountbook.database.entity.SavingEntity
 import com.example.allaccountbook.database.model.InvestType
-import com.example.allaccountbook.database.model.TransactionCategory
 import com.example.allaccountbook.database.model.TransactionDetail
-import com.example.allaccountbook.database.model.getDate
-import com.example.allaccountbook.database.repository.ExpenseRepository
-import com.example.allaccountbook.database.repository.IncomeRepository
+import com.example.allaccountbook.database.model.getLocalDate
+import com.example.allaccountbook.database.model.getName
 import com.example.allaccountbook.database.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @HiltViewModel
 class TransactionViewModel @Inject constructor(
@@ -46,13 +45,6 @@ class TransactionViewModel @Inject constructor(
         repository.insertDetail(TransactionDetail.Income(income, null, null))
     }
 
-    fun getTransactionsByDate(dateString: String): List<TransactionDetail> {
-        val parsed = SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREA).parse(dateString)
-        val formatted = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(parsed!!)
-        return transactions.value.filter {
-            it.getDate() == formatted
-        }
-    }
 
     private fun insertMockData() {
         viewModelScope.launch {

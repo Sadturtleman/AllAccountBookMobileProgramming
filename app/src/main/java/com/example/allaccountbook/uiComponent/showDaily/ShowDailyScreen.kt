@@ -117,7 +117,6 @@ fun ShowDailyScreen(
 
         // 카테고리 필터
         Column {
-            Text("📌 카테고리 필터:")
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -227,8 +226,8 @@ fun ShowDailyScreen(
                                     Spacer(Modifier.height(4.dp))
                                     if (totalExpense > 0) Text("${formatWithCommas(totalExpense)}원", fontSize = 12.sp, color = Color.Red)
                                     if (totalIncome > 0) Text("${formatWithCommas(totalIncome)}원", fontSize = 12.sp, color = Color.Blue)
-                                    if (totalBorrow > 0) Text("빌림: ${formatWithCommas(totalBorrow)}원", fontSize = 12.sp, color = Color(0xFF6C3483))
-                                    if (totalBorrowed > 0) Text("빌려준: ${formatWithCommas(totalBorrowed)}원", fontSize = 12.sp, color = Color(0xFF2874A6))
+                                    if (totalBorrow > 0) Text("${formatWithCommas(totalBorrow)}원", fontSize = 12.sp, color = Color(0xFF6C3483))
+                                    if (totalBorrowed > 0) Text("${formatWithCommas(totalBorrowed)}원", fontSize = 12.sp, color = Color(0xFF2874A6))
                                 }
                             }
                         }

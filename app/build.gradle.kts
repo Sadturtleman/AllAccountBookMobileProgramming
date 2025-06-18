@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.datastore)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.accompanist.pager)
     ksp(libs.androidx.room.compiler)
     ksp(libs.dagger.hilt.android.compiler)
     testImplementation(libs.junit)

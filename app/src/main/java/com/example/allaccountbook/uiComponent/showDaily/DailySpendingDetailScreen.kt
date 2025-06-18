@@ -1,5 +1,6 @@
 package com.example.allaccountbook.uiComponent.showDaily
 
+import android.util.Log
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,7 +24,10 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import androidx.compose.foundation.lazy.items
 import androidx.navigation.NavController
+import com.example.allaccountbook.database.model.getLocalDate
 import com.example.allaccountbook.uiPersistent.BottomNavBar
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun DailySpendingDetailScreen(
@@ -31,6 +35,18 @@ fun DailySpendingDetailScreen(
     viewModel: TransactionViewModel = hiltViewModel(),
     navController: NavController
 ) {
+
+    val transactions by viewModel.transactions.collectAsState()
+
+    val parsedDate = remember(selectedDate) {
+        LocalDate.parse(
+            selectedDate,
+            DateTimeFormatter.ofPattern("yyyy년 MM월 dd일", Locale.KOREA)
+        )
+    }
+
+    val spendings = transactions.filter { it.getLocalDate() == parsedDate }
+
     val allFilters = remember { mutableStateListOf<String>() }
 
     LaunchedEffect(Unit) {
@@ -41,21 +57,11 @@ fun DailySpendingDetailScreen(
 
     val selectedFilters = remember { mutableStateListOf<String>() }
 
-    var spendings by remember { mutableStateOf<List<TransactionDetail>>(emptyList()) }
-
-    LaunchedEffect(selectedDate) {
-        spendings = viewModel.getTransactionsByDate(selectedDate)
-
-    }
-
-    val parsedDate = SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREA).parse(selectedDate)
-    val formattedDate = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(parsedDate!!)
-
     val filteredSpendings = if (selectedFilters.isEmpty()) {
-        spendings.filter { it.getDate() == formattedDate }
+        spendings
     } else {
         spendings.filter {
-            it.getDate() == formattedDate && selectedFilters.contains(it.getCategory())
+            selectedFilters.contains(it.getCategory())
         }
     }
 
