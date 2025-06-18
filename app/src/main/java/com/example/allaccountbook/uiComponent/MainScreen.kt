@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -196,7 +198,9 @@ fun MainScreen(
             Spacer(Modifier.height(15.dp))
             Text("수입 / 지출 현황", fontWeight = FontWeight.Bold, fontSize = 18.sp)
             if (fixedExpenseList.isNotEmpty() || fixedIncomeList.isNotEmpty()) {
-                Column(
+                Text("📌 고정비 상세 목록", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp)
@@ -204,11 +208,11 @@ fun MainScreen(
                         .padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("📌 고정비 상세 목록", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-
                     if (fixedExpenseList.isNotEmpty()) {
-                        Text("💸 고정 지출", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                        fixedExpenseList.forEach {
+                        item {
+                            Text("💸 고정 지출", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                        }
+                        items(fixedExpenseList) {
                             val item = it.data
                             val formattedDate = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(item.date)
                             Text("[${item.category}] ${item.name} | ${formatWithCommas(item.price)}원 | $formattedDate")
@@ -216,12 +220,14 @@ fun MainScreen(
                     }
 
                     if (fixedIncomeList.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("💰 고정 수입", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                        fixedIncomeList.forEach {
+                        item {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("💰 고정 수입", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                        }
+                        items(fixedIncomeList) {
                             val item = it.data
                             val formattedDate = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(item.date)
-                            Text("[${item.category}] ${item.name} | +${formatWithCommas(item.price)}원 | $formattedDate")
+                            Text("[${item.category}] ${item.name} | ${formatWithCommas(item.price)}원 | $formattedDate")
                         }
                     }
                 }

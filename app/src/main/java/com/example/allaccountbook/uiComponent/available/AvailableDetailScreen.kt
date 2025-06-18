@@ -115,9 +115,11 @@ fun AvailableDetailScreen(
 
     val totalRemaining = monthlyCategoryInfoList.sumOf { it.remainingAmount }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         Text(
             text = selectedMonth,
             style = MaterialTheme.typography.headlineSmall,
@@ -147,12 +149,16 @@ fun AvailableDetailScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("카테고리", fontWeight = FontWeight.SemiBold)
-            Text("설정 금액", fontWeight = FontWeight.SemiBold)
-            Text("남은 금액", fontWeight = FontWeight.SemiBold)
-            Text("남은 비율", fontWeight = FontWeight.SemiBold)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text("카테고리", fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+            Text("설정 금액", fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+            Text("남은 금액", fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+            Text("남은 비율", fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
         }
+
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -167,26 +173,32 @@ fun AvailableDetailScreen(
                     Text(
                         item.categoryName,
                         modifier = Modifier
-                            .clickable { navController.navigate("categoryMonthlyDetail/$selectedDate/${item.categoryName}") }
+                            .weight(1f)
+                            .clickable {
+                                navController.navigate("categoryMonthlyDetail/$selectedDate/${item.categoryName}")
+                            }
                     )
-
                     Text(
                         text = "${item.maxAmount}원",
                         modifier = Modifier
+                            .weight(1f)
                             .clickable { editingCategory = item.categoryName }
                             .background(Color(0xFFE0F7FA), RoundedCornerShape(4.dp))
                             .padding(horizontal = 8.dp, vertical = 2.dp)
                     )
-
-                    Text("${item.remainingAmount}원")
-
+                    Text(
+                        "${item.remainingAmount}원",
+                        modifier = Modifier.weight(1f)
+                    )
                     Text(
                         "${item.remainingPercent}%",
                         modifier = Modifier
+                            .weight(1f)
                             .background(Color(0xFFA8F0A3), RoundedCornerShape(4.dp))
                             .padding(horizontal = 8.dp, vertical = 2.dp)
                     )
                 }
+
             }
         }
 
