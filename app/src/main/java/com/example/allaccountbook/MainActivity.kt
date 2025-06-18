@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            AllAccountBookTheme {
+            AllAccountBookTheme(darkTheme = false){
                 StartScreen()
             }
         }
