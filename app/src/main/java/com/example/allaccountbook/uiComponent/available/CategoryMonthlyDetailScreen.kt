@@ -9,11 +9,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.allaccountbook.database.model.TransactionDetail
 import com.example.allaccountbook.uiComponent.toYearMonth
 import com.example.allaccountbook.uiPersistent.BottomNavBar
@@ -22,7 +23,6 @@ import com.example.allaccountbook.viewmodel.view.TransactionViewModel
 import java.text.SimpleDateFormat
 import java.time.YearMonth
 import java.util.*
-
 
 @Composable
 fun CategoryMonthlyDetailScreen(
@@ -59,6 +59,7 @@ fun CategoryMonthlyDetailScreen(
                                 )
             }
     }
+
     // 날짜로 그룹화
     val grouped = expenseList.groupBy {
         SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREA).format(it.data.date)
@@ -132,6 +133,7 @@ fun CategoryMonthlyDetailScreen(
                 }
             }
         }
+
 
     // Column(modifier = Modifier
     //     .fillMaxSize()
