@@ -13,6 +13,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.example.allaccountbook.database.entity.ExpenseEntity
 import com.example.allaccountbook.database.entity.IncomeEntity
+import com.example.allaccountbook.database.entity.InvestEntity
+import com.example.allaccountbook.database.model.InvestType
 import com.example.allaccountbook.model.BorrowMoney
 import com.example.allaccountbook.model.BorrowType
 import com.example.allaccountbook.uiPersistent.CustomDatePickerDialog
@@ -27,7 +29,9 @@ enum class AddType(val display: String) {
     BORROWED("빌려준"),
     BORROW("빌린"),
     INCOME("수입"),
-    EXPENSE("지출")
+    EXPENSE("지출"),
+    INVESTMENT("투자"),
+    SAVING("저축")
 }
 
 @Composable
@@ -46,6 +50,11 @@ fun AddBorrowItemScreen(
     var category by remember { mutableStateOf("") } // 分类字段
     var isFixed by remember { mutableStateOf(false) }
     var fixedMonths by remember { mutableStateOf(1) } // 기본 1개월
+    var investmentName by remember { mutableStateOf("") }
+    var investmentCount by remember { mutableStateOf("") }
+    var investmentPrice by remember { mutableStateOf("") }
+    var investmentType by remember { mutableStateOf(InvestType.BUY) }
+    var investmentCompany by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -56,21 +65,61 @@ fun AddBorrowItemScreen(
     ) {
         Text("항목 추가", style = MaterialTheme.typography.titleLarge)
 
-        OutlinedTextField(
-            value = reason,
-            onValueChange = { reason = it },
-            label = { Text("사유") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        if(selectedType != AddType.INVESTMENT && selectedType != AddType.SAVING){
+            OutlinedTextField(
+                value = reason,
+                onValueChange = { reason = it },
+                label = { Text("사유") },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
-        OutlinedTextField(
-            value = price,
-            onValueChange = { price = it.filter { it.isDigit() } },
-            label = { Text("금액") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
+        if(selectedType != AddType.INVESTMENT && selectedType != AddType.SAVING) {
+            OutlinedTextField(
+                value = price,
+                onValueChange = { price = it.filter { it.isDigit() } },
+                label = { Text("금액") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+        }
 
+        if(selectedType == AddType.INVESTMENT){
+            OutlinedTextField(
+                value = investmentName,
+                onValueChange = { investmentName = it },
+                label = { Text("종목명") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text("매매 종류:")
+                DropdownInvestmentTypeSelector(
+                    investmentType = investmentType,
+                    onSelect = { investmentType = it }
+                )
+            }
+            OutlinedTextField(
+                value = investmentCount,
+                onValueChange = { investmentCount = it },
+                label = { Text("매수 개수") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = investmentPrice,
+                onValueChange = { investmentPrice = it },
+                label = { Text("매매 단가") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = investmentCompany,
+                onValueChange = { investmentCompany = it },
+                label = { Text("증권사") },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
         if (selectedType == AddType.INCOME || selectedType == AddType.EXPENSE) {
             OutlinedTextField(
@@ -160,7 +209,7 @@ fun AddBorrowItemScreen(
             Button(
                 onClick = { navController.popBackStack() },
 
-            ) {
+                ) {
                 Text("취소")
             }
             Spacer(modifier = Modifier.size(10.dp))
@@ -235,6 +284,26 @@ fun AddBorrowItemScreen(
                                         )
                                     }
                                 }
+
+                                AddType.SAVING -> {
+
+                                }
+
+                                AddType.INVESTMENT -> {
+                                    transactionViewModel.viewModelScope.launch {
+                                        transactionViewModel.addInvestment(
+                                            InvestEntity(
+                                                transactionId = 0, // transactionID 추가
+                                                count = investmentCount.toIntOrNull() ?: 0,
+                                                price = investmentPrice.toIntOrNull() ?: 0,
+                                                name = investmentName,
+                                                date = currentDate,
+                                                type = investmentType,
+                                                company = investmentCompany
+                                            )
+                                        )
+                                    }
+                                }
                             }
                         }
 
@@ -260,7 +329,9 @@ fun DropdownMenuTypeSelector(
         AddType.BORROWED to "빌려준",
         AddType.BORROW to "빌린",
         AddType.INCOME to "수입",
-        AddType.EXPENSE to "지출"
+        AddType.EXPENSE to "지출",
+        AddType.SAVING to "저축",
+        AddType.INVESTMENT to "투자"
     )
     var expanded by remember { mutableStateOf(false) }
 
@@ -300,6 +371,36 @@ fun DropdownMenuMonthSelector(
                     text = { Text("$month 개월") },
                     onClick = {
                         onSelect(month)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun DropdownInvestmentTypeSelector(
+    investmentType: InvestType,
+    onSelect: (InvestType) -> Unit
+) {
+    val options = listOf(
+        InvestType.BUY to "매수",
+        InvestType.SELL to "매도"
+    )
+
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        OutlinedButton(onClick = { expanded = true }) {
+            Text(options.first { it.first == investmentType }.second)
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { (type, label) ->
+                DropdownMenuItem(
+                    text = { Text(label) },
+                    onClick = {
+                        onSelect(type)
                         expanded = false
                     }
                 )

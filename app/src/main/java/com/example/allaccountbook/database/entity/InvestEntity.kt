@@ -32,6 +32,7 @@ data class InvestEntity (
     var price : Int,
     var name : String,
     var date : Date,
-    var category : String,
-    var type : InvestType
+    var category : String = "투자",
+    var type : InvestType,
+    var company : String
 )

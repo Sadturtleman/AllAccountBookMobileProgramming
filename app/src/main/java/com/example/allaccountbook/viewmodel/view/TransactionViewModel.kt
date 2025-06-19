@@ -45,6 +45,9 @@ class TransactionViewModel @Inject constructor(
         repository.insertDetail(TransactionDetail.Income(income, null, null))
     }
 
+    suspend fun addInvestment(invest: InvestEntity) {
+        repository.insertDetail(TransactionDetail.Invest(invest))
+    }
 
     private fun insertMockData() {
         viewModelScope.launch {
@@ -115,7 +118,8 @@ class TransactionViewModel @Inject constructor(
                         name = "농심",
                         date = Calendar.getInstance().apply { set(2025, 4, 1) }.time,
                         category = "음식",
-                        type = InvestType.BUY
+                        type = InvestType.BUY,
+                        company = "미래애셋증권"
                     )
                 )
             )
