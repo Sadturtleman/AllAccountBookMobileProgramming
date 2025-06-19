@@ -11,13 +11,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.allaccountbook.database.entity.InvestEntity
+import com.example.allaccountbook.database.model.InvestType
 import com.example.allaccountbook.database.model.TransactionDetail
+import com.example.allaccountbook.uiComponent.add.AddType
+import com.example.allaccountbook.uiComponent.investment.InvestInfo
 import com.example.allaccountbook.uiComponent.toYearMonth
 import com.example.allaccountbook.uiPersistent.BottomNavBar
 import com.example.allaccountbook.uiPersistent.CustomDatePickerDialog
 import com.example.allaccountbook.viewmodel.view.TransactionViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
+
+
+data class InvestInfo(
+    val invName : String,
+    var invCount : Int,
+    var invPriceTotal : Int,
+    val invAver: Int = invPriceTotal / invCount
+)
 
 @Composable
 fun InvestmentDetailScreen(navController: NavController, selectedDate : String, viewmodel : TransactionViewModel = hiltViewModel()) {
@@ -123,38 +135,70 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
             if (viewMode == "전체") {
                 Text("소유 종목")
                 Text("소유 개수")
-                Text("평균단가")
+                Text("평균 단가")
                 Text("총액")
             } else {
                 Text("투자 성향")
-                Text("월별 손익")
+                Text("현재 보유율")
                 Text("현재 보유량")
             }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        val nameStorage by remember(investList) {
+            derivedStateOf {
+                val tempList = mutableListOf<InvestInfo>()
+                investList.forEach { invest ->
+                    val name = invest.data.name
+                    val type = invest.data.type
+                    val count = invest.data.count
+                    val price = count * invest.data.price
+
+                    val existing = tempList.find { it.invName == name }
+                    if (existing != null) {
+                        if (type == InvestType.BUY) {
+                            existing.invCount += count
+                            existing.invPriceTotal += price
+                        } else {
+                            existing.invCount -= count
+                            existing.invPriceTotal -= price
+                            if(existing.invCount == 0){
+                                tempList.remove(existing)
+
+                            }
+                        }
+                    } else {
+                        if (type == InvestType.BUY) {
+                            tempList.add(InvestInfo(name, count, price))
+                        }
+                    }
+
+                }
+                tempList
+            }
+        }
+
         Column(modifier = Modifier.fillMaxWidth()) {
             if (viewMode == "전체") {
-                investList.forEach {
+                nameStorage.forEach {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                selectedItemName = it.data.name
+                                selectedItemName = it.invName
                                 showDialog = true
                             }
                             .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(it.data.name)
-                        Text(it.data.count.toString())
-                        Text(it.data.price.toString())
-                        Text((it.data.count * it.data.price).toString())
+                        Text(it.invName)
+                        Text(it.invCount.toString())
+                        Text(it.invAver.toString())
+                        Text(it.invPriceTotal.toString())
                     }
                 }
             } else {
-
                 categoryTotal.forEach { (category, pair) ->
                     val (count, price) = pair
                     Row(
@@ -208,3 +252,5 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
         )
     }
 }
+
+
