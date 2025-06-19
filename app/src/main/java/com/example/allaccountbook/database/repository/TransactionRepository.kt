@@ -41,7 +41,7 @@ class TransactionRepository @Inject constructor(
                 val (lat, lng) = transaction.getLocation()
                 when (transaction.transactionType) {
                     TransactionType.SAVING -> savingDAO.getByTransactionId(transaction.transactionId)?.let {
-                        TransactionDetail.Saving(it, lat, lng)
+                        TransactionDetail.Saving(it)
                     }
                     TransactionType.INCOME -> incomeDAO.getByTransactionId(transaction.transactionId)?.let {
                         TransactionDetail.Income(it, lat, lng)

@@ -14,6 +14,7 @@ import androidx.navigation.NavController
 import com.example.allaccountbook.database.entity.ExpenseEntity
 import com.example.allaccountbook.database.entity.IncomeEntity
 import com.example.allaccountbook.database.entity.InvestEntity
+import com.example.allaccountbook.database.entity.SavingEntity
 import com.example.allaccountbook.database.model.InvestType
 import com.example.allaccountbook.model.BorrowMoney
 import com.example.allaccountbook.model.BorrowType
@@ -55,6 +56,8 @@ fun AddBorrowItemScreen(
     var investmentPrice by remember { mutableStateOf("") }
     var investmentType by remember { mutableStateOf(InvestType.BUY) }
     var investmentCompany by remember { mutableStateOf("") }
+    var savingName by remember{mutableStateOf("")}
+    var savingPrice by remember{mutableStateOf("")}
 
     Column(
         modifier = Modifier
@@ -135,6 +138,21 @@ fun AddBorrowItemScreen(
                 value = person,
                 onValueChange = { person = it },
                 label = { Text("대상") },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        if(selectedType == AddType.SAVING){
+            OutlinedTextField(
+                value = savingName,
+                onValueChange = { savingName = it },
+                label = { Text("저축 이름") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = savingPrice,
+                onValueChange = { savingPrice = it },
+                label = { Text("저축 금액") },
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -286,7 +304,18 @@ fun AddBorrowItemScreen(
                                 }
 
                                 AddType.SAVING -> {
-
+                                    transactionViewModel.viewModelScope.launch {
+                                        transactionViewModel.addSaving(
+                                            SavingEntity(
+                                                transactionId = 0, // transactionId 추가
+                                                price = savingPrice.toIntOrNull() ?: 0,
+                                                name = savingName,
+                                                startDate = currentDate,
+                                                endDate = currentDate,
+                                                percent = 10f,
+                                            )
+                                        )
+                                    }
                                 }
 
                                 AddType.INVESTMENT -> {

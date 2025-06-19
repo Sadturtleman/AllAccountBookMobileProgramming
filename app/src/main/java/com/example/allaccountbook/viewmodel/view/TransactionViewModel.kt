@@ -49,6 +49,10 @@ class TransactionViewModel @Inject constructor(
         repository.insertDetail(TransactionDetail.Invest(invest))
     }
 
+    suspend fun addSaving(saving: SavingEntity) {
+        repository.insertDetail(TransactionDetail.Saving(saving))
+    }
+
     private fun insertMockData() {
         viewModelScope.launch {
             val mockData = listOf(
@@ -106,9 +110,7 @@ class TransactionViewModel @Inject constructor(
                         category = "기타",
                         savingId = 1,
                         percent = 0.3F
-                    ),
-                    latitude = null,
-                    longitude = null
+                    )
                 ),
                 TransactionDetail.Invest(
                     data = InvestEntity(

@@ -19,8 +19,7 @@ sealed class TransactionDetail(
 ) {
     data class Saving(
         val data: SavingEntity,
-        override val latitude: Double?, override val longitude: Double?
-    ) : TransactionDetail(TransactionType.SAVING, latitude, longitude)
+    ) : TransactionDetail(TransactionType.SAVING, null, null)
 
     data class Expense(
         val data: ExpenseEntity,
