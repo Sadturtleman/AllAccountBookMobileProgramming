@@ -51,6 +51,7 @@ fun InvestmentSummaryDetailScreen(
             Text("날짜")
             Text("매도/매수")
             Text("매매 금액")
+            Text("증권사")
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -65,6 +66,7 @@ fun InvestmentSummaryDetailScreen(
                 Text(it.data.date.formatToString())
                 Text(it.data.type.label)
                 Text((it.data.count * it.data.price).toString())
+                Text(it.data.company)
             }
         }
         // data
