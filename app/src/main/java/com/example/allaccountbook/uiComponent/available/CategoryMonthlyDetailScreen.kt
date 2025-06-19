@@ -27,8 +27,8 @@ import java.util.*
 @Composable
 fun CategoryMonthlyDetailScreen(
     navController: NavController,
-    selectedDate: String,             // "2025년 5월" 형식
-    selectedCategory: String,         // 예: "음식점"
+    selectedDate: String,         // 예: "2025년 6월"
+    selectedCategory: String,     // 예: "음식점"
     transactionViewModel: TransactionViewModel = hiltViewModel()
 ) {
     var showDateDialog by remember { mutableStateOf(false) }
@@ -58,59 +58,131 @@ fun CategoryMonthlyDetailScreen(
                                 }
                                 )
             }
-
+    }
+    // 날짜로 그룹화
+    val grouped = expenseList.groupBy {
+        SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREA).format(it.data.date)
     }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = selectedMonth,
-                modifier = Modifier
-                    .clickable { showDateDialog = true }
-                    .padding(8.dp),
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(selectedCategory, style = MaterialTheme.typography.titleMedium)
-        }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+
+
+        // 카테고리 명
+        Text(
+            text = selectedCategory,
+            modifier = Modifier
+                .padding(start = 8.dp, top = 4.dp, bottom = 12.dp),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
 
         CustomDatePickerDialog(
             showDialog = showDateDialog,
             onDismiss = { showDateDialog = false },
             onDateSelected = {
-                selectedMonth = it // 이미 "yyyy년 M월" 형식
+                selectedMonth = it
             }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("사유", modifier = Modifier.weight(1f))
-            Text("금액", modifier = Modifier.weight(1f))
-            Text("날짜", modifier = Modifier.weight(1f))
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
+        // 리스트
         LazyColumn {
-            items(expenseList) { item ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(item.data.name, modifier = Modifier.weight(1f))
-                    Text("${item.data.price}원", modifier = Modifier.weight(1f))
-                    Text(item.data.date.toString(), modifier = Modifier.weight(1f))
+            grouped.forEach { (dateStr, itemsOnDate) ->
+                item {
+                    Text(
+                        text = dateStr,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp, horizontal = 4.dp),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                items(itemsOnDate) { item ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(item.data.name)
+//后续有时间的话可以添加 시간이 있으면 나중에 추가할 수 있습니다.
+//                            Text(
+//                                text = SimpleDateFormat("HH:mm", Locale.KOREA).format(item.data.date),
+//                                style = MaterialTheme.typography.bodySmall,
+//                                color = Color.Gray
+//                            )
+                        }
+
+                        Text(
+                            text = "%,d원".format(item.data.price),
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.End,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
         }
+
+    // Column(modifier = Modifier
+    //     .fillMaxSize()
+    //     .padding(16.dp)) {
+    //     Row(
+    //         modifier = Modifier.fillMaxWidth(),
+    //         verticalAlignment = Alignment.CenterVertically
+    //     ) {
+    //         Text(
+    //             text = selectedMonth,
+    //             modifier = Modifier
+    //                 .clickable { showDateDialog = true }
+    //                 .padding(8.dp),
+    //             style = MaterialTheme.typography.bodyLarge
+    //         )
+    //         Spacer(modifier = Modifier.width(16.dp))
+    //         Text(selectedCategory, style = MaterialTheme.typography.titleMedium)
+    //     }
+
+    //     CustomDatePickerDialog(
+    //         showDialog = showDateDialog,
+    //         onDismiss = { showDateDialog = false },
+    //         onDateSelected = {
+    //             selectedMonth = it // 이미 "yyyy년 M월" 형식
+    //         }
+    //     )
+
+    //     Spacer(modifier = Modifier.height(16.dp))
+
+    //     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    //         Text("사유", modifier = Modifier.weight(1f))
+    //         Text("금액", modifier = Modifier.weight(1f))
+    //         Text("날짜", modifier = Modifier.weight(1f))
+    //     }
+
+    //     Spacer(modifier = Modifier.height(8.dp))
+
+    //     LazyColumn {
+    //         items(expenseList) { item ->
+    //             Row(
+    //                 modifier = Modifier
+    //                     .fillMaxWidth()
+    //                     .padding(vertical = 6.dp),
+    //                 horizontalArrangement = Arrangement.SpaceBetween
+    //             ) {
+    //                 Text(item.data.name, modifier = Modifier.weight(1f))
+    //                 Text("${item.data.price}원", modifier = Modifier.weight(1f))
+    //                 Text(item.data.date.toString(), modifier = Modifier.weight(1f))
+    //             }
+    //         }
+    //     }
 
         Spacer(modifier = Modifier.weight(1f))
 
