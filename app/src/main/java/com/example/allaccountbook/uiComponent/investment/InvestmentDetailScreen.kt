@@ -65,24 +65,6 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
         }
     }
 
-// 2. 카테고리별로 그룹화
-    val investByCategory by remember(investList) {
-        derivedStateOf {
-            investList.groupBy { it.data.category }
-        }
-    }
-
-// 3. 각 카테고리의 총 개수 및 총 금액 계산
-    val categoryTotal by remember(investByCategory) {
-        derivedStateOf {
-            investByCategory.mapValues { (_, list) ->
-                val totalCount = list.sumOf { it.data.count }
-                val totalPrice = list.sumOf { it.data.count * it.data.price }
-                totalCount to totalPrice
-            }
-        }
-    }
-
     var selectedItemName by remember { mutableStateOf<String?>(null) }
     var selectedItemCategory by remember { mutableStateOf<String?>(null) }
 
@@ -235,7 +217,7 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
                     }
                 }
             } else {
-                var total : Int = 0
+                var total = 0
                 categoryStorage.forEach { categoryList->
                     Row(
                         modifier = Modifier

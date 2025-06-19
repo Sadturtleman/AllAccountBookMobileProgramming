@@ -15,6 +15,7 @@ import com.example.allaccountbook.uiComponent.toYearMonth
 import com.example.allaccountbook.uiPersistent.BottomNavBar
 import com.example.allaccountbook.viewmodel.view.TransactionViewModel
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 @Composable
@@ -56,7 +57,7 @@ fun InvestmentTrendDetailScreen(
                     .padding(vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(it.data.date.toString())
+                Text(it.data.date.formatToString())
                 Text(it.data.type.label)
                 Text((it.data.count * it.data.price).toString())
                 Text(it.data.name)

@@ -16,6 +16,7 @@ import com.example.allaccountbook.uiComponent.toYearMonth
 import com.example.allaccountbook.uiPersistent.BottomNavBar
 import com.example.allaccountbook.viewmodel.view.TransactionViewModel
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 @Composable
@@ -61,7 +62,7 @@ fun InvestmentSummaryDetailScreen(
                     .padding(vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(it.data.date.toString())
+                Text(it.data.date.formatToString())
                 Text(it.data.type.label)
                 Text((it.data.count * it.data.price).toString())
             }
@@ -75,4 +76,9 @@ fun InvestmentSummaryDetailScreen(
             onMapNavigate = { navController.navigate("map") }
         )
     }
+}
+
+// 날짜 포맷 확장 함수
+fun Date.formatToString(): String {
+    return SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(this)
 }
