@@ -28,7 +28,14 @@ data class InvestInfo(
     val invName : String,
     var invCount : Int,
     var invPriceTotal : Int,
-    val invAver: Int = invPriceTotal / invCount
+    val invAver: Int = invPriceTotal / invCount,
+    val invCategory : String
+)
+
+data class InvestTrendInfo(
+    val trendName : String,
+    var trandHoldPercent : Int,
+    var trandTotalPrice : Int
 )
 
 @Composable
@@ -154,6 +161,7 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
                     val type = invest.data.type
                     val count = invest.data.count
                     val price = count * invest.data.price
+                    val category = invest.data.category
 
                     val existing = tempList.find { it.invName == name }
                     if (existing != null) {
@@ -162,7 +170,7 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
                             existing.invPriceTotal += price
                         } else {
                             existing.invCount -= count
-                            existing.invPriceTotal -= price
+                            existing.invPriceTotal -= count * existing.invAver
                             if(existing.invCount == 0){
                                 tempList.remove(existing)
 
@@ -170,7 +178,10 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
                         }
                     } else {
                         if (type == InvestType.BUY) {
-                            tempList.add(InvestInfo(name, count, price))
+                            tempList.add(InvestInfo(
+                                name, count, price,
+                                invCategory = category
+                            ))
                         }
                     }
 
@@ -178,6 +189,31 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
                 tempList
             }
         }
+
+        // 처음 구매했을 때 입력한 카테고리를 기준으로 계산
+        val categoryStorage by remember(investList) {
+            derivedStateOf {
+                val tempList = mutableListOf<InvestTrendInfo>()
+                var total = 0
+                nameStorage.forEach { invest ->
+                    val category = invest.invCategory
+                    val TotalPrice = invest.invPriceTotal
+
+                    val existing = tempList.find { it.trendName == category}
+                    if (existing != null) {
+                        existing.trandTotalPrice += TotalPrice
+                        total += TotalPrice
+                        existing.trandHoldPercent = (existing.trandTotalPrice * 100) / total
+                    } else {
+                        total += TotalPrice
+                        tempList.add(InvestTrendInfo(category, (TotalPrice * 100) / total,TotalPrice ))
+                    }
+
+                }
+                tempList
+            }
+        }
+
 
         Column(modifier = Modifier.fillMaxWidth()) {
             if (viewMode == "전체") {
@@ -199,38 +235,36 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
                     }
                 }
             } else {
-                categoryTotal.forEach { (category, pair) ->
-                    val (count, price) = pair
+                var total : Int = 0
+                categoryStorage.forEach { categoryList->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                selectedItemCategory = category
+                                selectedItemCategory = categoryList.trendName
                                 showTrendDialog = true // 필요시 category 이름도 넘길 수 있음
                             }
                             .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(category)
-                        Text(count.toString())
-                        Text(price.toString())
+                        Text(categoryList.trendName)
+                        Text("${ categoryList.trandHoldPercent } %")
+                        Text(categoryList.trandTotalPrice.toString())
                     }
+                    total += categoryList.trandTotalPrice
                 }
 
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
 
-                val totalCount = categoryTotal.values.sumOf { it.first }
-                val totalPrice = categoryTotal.values.sumOf { it.second }
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("총")
-                    Text(totalCount.toString())
-                    Text(totalPrice.toString())
+                    Text("-")
+                    Text(total.toString())
                 }
             }
         }
