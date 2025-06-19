@@ -19,6 +19,7 @@ import com.example.allaccountbook.uiPersistent.CustomDatePickerDialog
 import com.example.allaccountbook.viewmodel.view.BorrowViewModel
 import com.example.allaccountbook.viewmodel.view.TransactionViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -155,89 +156,98 @@ fun AddBorrowItemScreen(
                 }
             }
         }
-        Button(
-            onClick = {
-                try {
-                    val parsedDate = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).parse(date)
-                    val baseDate = parsedDate ?: Date()
-                    val baseCalendar = Calendar.getInstance().apply {
-                        time = baseDate
-                    }
-                    val originalDay = baseCalendar.get(Calendar.DAY_OF_MONTH)
+        Row(modifier = Modifier.align(Alignment.End)){
+            Button(
+                onClick = { navController.popBackStack() },
 
-                    val repeatCount =
-                        if ((selectedType == AddType.INCOME || selectedType == AddType.EXPENSE) && isFixed) fixedMonths else 1
-
-                    for (i in 0 until repeatCount) {
-                        val calendar = Calendar.getInstance().apply {
+            ) {
+                Text("취소")
+            }
+            Spacer(modifier = Modifier.size(10.dp))
+            Button(
+                onClick = {
+                    try {
+                        val parsedDate = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).parse(date)
+                        val baseDate = parsedDate ?: Date()
+                        val baseCalendar = Calendar.getInstance().apply {
                             time = baseDate
-                            add(Calendar.MONTH, i)
-                            set(Calendar.DAY_OF_MONTH, 1)
-                            val maxDay = getActualMaximum(Calendar.DAY_OF_MONTH)
-                            set(Calendar.DAY_OF_MONTH, minOf(originalDay, maxDay))
+                        }
+                        val originalDay = baseCalendar.get(Calendar.DAY_OF_MONTH)
+
+                        val repeatCount =
+                            if ((selectedType == AddType.INCOME || selectedType == AddType.EXPENSE) && isFixed) fixedMonths else 1
+
+                        for (i in 0 until repeatCount) {
+                            val calendar = Calendar.getInstance().apply {
+                                time = baseDate
+                                add(Calendar.MONTH, i)
+                                set(Calendar.DAY_OF_MONTH, 1)
+                                val maxDay = getActualMaximum(Calendar.DAY_OF_MONTH)
+                                set(Calendar.DAY_OF_MONTH, minOf(originalDay, maxDay))
+                            }
+
+                            val currentDate = calendar.time
+
+                            when (selectedType) {
+                                AddType.BORROWED, AddType.BORROW -> {
+                                    if (i == 0) { // 고정비 아님
+                                        val newBorrow = BorrowMoney(
+                                            id = 0,
+                                            type = if (selectedType == AddType.BORROWED) BorrowType.BORROWED else BorrowType.BORROW,
+                                            person = person,
+                                            price = price.toIntOrNull() ?: 0,
+                                            date = currentDate,
+                                            reason = reason,
+                                            finished = false
+                                        )
+                                        borrowViewModel.addBorrow(newBorrow)
+                                    }
+                                }
+
+                                AddType.EXPENSE -> {
+                                    transactionViewModel.viewModelScope.launch {
+                                        transactionViewModel.addExpense(
+                                            ExpenseEntity(
+                                                expenseId = 0,
+                                                transactionId = 0,
+                                                price = price.toIntOrNull() ?: 0,
+                                                name = reason,
+                                                date = currentDate,
+                                                category = if (category.isNotBlank()) category else "기타",
+                                                isFixed = isFixed
+                                            )
+                                        )
+                                    }
+                                }
+
+                                AddType.INCOME -> {
+                                    transactionViewModel.viewModelScope.launch {
+                                        transactionViewModel.addIncome(
+                                            IncomeEntity(
+                                                incomeId = 0,
+                                                transactionId = 0,
+                                                price = price.toIntOrNull() ?: 0,
+                                                name = reason,
+                                                date = currentDate,
+                                                category = if (category.isNotBlank()) category else "기타",
+                                                isFixed = isFixed
+                                            )
+                                        )
+                                    }
+                                }
+                            }
                         }
 
-                        val currentDate = calendar.time
-
-                        when (selectedType) {
-                            AddType.BORROWED, AddType.BORROW -> {
-                                if (i == 0) { // 고정비 아님
-                                    val newBorrow = BorrowMoney(
-                                        id = 0,
-                                        type = if (selectedType == AddType.BORROWED) BorrowType.BORROWED else BorrowType.BORROW,
-                                        person = person,
-                                        price = price.toIntOrNull() ?: 0,
-                                        date = currentDate,
-                                        reason = reason,
-                                        finished = false
-                                    )
-                                    borrowViewModel.addBorrow(newBorrow)
-                                }
-                            }
-
-                            AddType.EXPENSE -> {
-                                transactionViewModel.viewModelScope.launch {
-                                    transactionViewModel.addExpense(
-                                        ExpenseEntity(
-                                            expenseId = 0,
-                                            transactionId = 0,
-                                            price = price.toIntOrNull() ?: 0,
-                                            name = reason,
-                                            date = currentDate,
-                                            category = if (category.isNotBlank()) category else "기타",
-                                            isFixed = isFixed
-                                        )
-                                    )
-                                }
-                            }
-
-                            AddType.INCOME -> {
-                                transactionViewModel.viewModelScope.launch {
-                                    transactionViewModel.addIncome(
-                                        IncomeEntity(
-                                            incomeId = 0,
-                                            transactionId = 0,
-                                            price = price.toIntOrNull() ?: 0,
-                                            name = reason,
-                                            date = currentDate,
-                                            category = if (category.isNotBlank()) category else "기타",
-                                            isFixed = isFixed
-                                        )
-                                    )
-                                }
-                            }
-                        }
+                        navController.popBackStack()
+                    } catch (e: Exception) {
+                        // TODO: 오류 처리
                     }
-
-                    navController.popBackStack()
-                } catch (e: Exception) {
-                    // TODO: 오류 처리
                 }
-            },
-            modifier = Modifier.align(Alignment.End)
-        ) {
-            Text("등록")
+            ) {
+                Text("등록")
+            }
         }
+
     }
 }
 
