@@ -20,8 +20,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.allaccountbook.database.model.InvestType
 import com.example.allaccountbook.database.model.TransactionDetail
 import com.example.allaccountbook.model.BorrowType
+import com.example.allaccountbook.uiComponent.investment.InvestInfo
 import com.example.allaccountbook.uiComponent.model.YearMonthPickerDialog
 import com.example.allaccountbook.uiPersistent.BottomNavBar
 import com.example.allaccountbook.uiPersistent.CustomDatePickerDialog
@@ -99,7 +101,38 @@ fun MainScreen(
 
     val getTotalInvestments by remember(investList) {
         derivedStateOf {
-            investList.sumOf { it.data.price * it.data.count }
+            val tempList = mutableListOf<InvestInfo>()
+            investList.forEach { invest ->
+                val name = invest.data.name
+                val type = invest.data.type
+                val count = invest.data.count
+                val price = count * invest.data.price
+                val category = invest.data.category
+
+                val existing = tempList.find { it.invName == name }
+                if (existing != null) {
+                    if (type == InvestType.BUY) {
+                        existing.invCount += count
+                        existing.invPriceTotal += price
+                    } else {
+                        existing.invCount -= count
+                        existing.invPriceTotal -= count * existing.invAver
+                        if(existing.invCount == 0){
+                            tempList.remove(existing)
+
+                        }
+                    }
+                } else {
+                    if (type == InvestType.BUY) {
+                        tempList.add(InvestInfo(
+                            name, count, price,
+                            invCategory = category
+                        ))
+                    }
+                }
+
+            }
+            tempList.sumOf { it.invPriceTotal }
         }
     }
 
@@ -110,11 +143,23 @@ fun MainScreen(
     }
 
     val getTotalLentAmount by remember(lendList) {
-        derivedStateOf { lendList.sumOf { it.price } }
+        derivedStateOf {
+            var total = 0
+            lendList.forEach {
+                if(!it.finished) total += it.price
+            }
+            total
+        }
     }
 
     val getTotalBorrowedAmount by remember(borrowList) {
-        derivedStateOf { borrowList.sumOf { it.price } }
+        derivedStateOf {
+            var total = 0
+            borrowList.forEach {
+                if(!it.finished) total += it.price
+            }
+            total
+        }
     }
 
     val fixedExpenseList = expenseList.filter { it.data.isFixed }
@@ -272,3 +317,4 @@ fun formatDateToDisplay(date: String): String {
         date // 예외 시 원본 반환
     }
 }
+
