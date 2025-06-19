@@ -56,6 +56,7 @@ fun AddBorrowItemScreen(
     var investmentPrice by remember { mutableStateOf("") }
     var investmentType by remember { mutableStateOf(InvestType.BUY) }
     var investmentCompany by remember { mutableStateOf("") }
+    var investmentTendency by remember { mutableStateOf("") }
     var savingName by remember{mutableStateOf("")}
     var savingPrice by remember{mutableStateOf("")}
 
@@ -120,6 +121,12 @@ fun AddBorrowItemScreen(
                 value = investmentCompany,
                 onValueChange = { investmentCompany = it },
                 label = { Text("증권사") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = investmentTendency,
+                onValueChange = { investmentTendency = it },
+                label = { Text("투자 성향") },
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -328,7 +335,8 @@ fun AddBorrowItemScreen(
                                                 name = investmentName,
                                                 date = currentDate,
                                                 type = investmentType,
-                                                company = investmentCompany
+                                                company = investmentCompany,
+                                                category = investmentTendency
                                             )
                                         )
                                     }
