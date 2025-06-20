@@ -166,6 +166,9 @@ fun ShowMonthlyCalendar(
     val calendarRows = buildCalendarGrid(startDayOfWeek, daysInMonth)
     var showChoiceDialog by remember { mutableStateOf(false) }
     var clickedDate by remember { mutableStateOf("") }
+    var hasSpend by remember { mutableStateOf(false) }
+    var hasBorrow by remember { mutableStateOf(false) }
+    var hasInvest by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(modifier = Modifier.fillMaxWidth()) {
@@ -201,25 +204,29 @@ fun ShowMonthlyCalendar(
                                         val fullDate = "${parsedDate.year}-${parsedDate.monthValue.toString().padStart(2, '0')}-$dayStr"
 
                                         val dailyTransactions = filteredData.filter { it.getDate() == fullDate }
+                                        // ✅ 投资金额显示修正: getAmount() 返回金额
                                         val totalExpense = dailyTransactions.filter { it.type.name == "EXPENSE" }.sumOf { it.getAmount() }
                                         val totalIncome = dailyTransactions.filter { it.type.name == "INCOME" }.sumOf { it.getAmount() }
-
+                                        val totalInvest = dailyTransactions.filter { it.type.name == "INVEST" }.sumOf { it.getAmount() }
                                         val dailyBorrows = borrowList.filter {
                                             SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(it.date) == fullDate
                                         }
                                         val totalBorrow = dailyBorrows.filter { it.type.name == "BORROW" }.filter { !it.finished }.sumOf { it.price }
                                         val totalBorrowed = dailyBorrows.filter { it.type.name == "BORROWED" }.filter { !it.finished }.sumOf { it.price }
 
-                                        val hasSpend = totalExpense > 0 || totalIncome > 0
-                                        val hasBorrow = totalBorrow > 0 || totalBorrowed > 0
+                                        hasSpend = totalExpense > 0 || totalIncome > 0
+                                        hasBorrow = totalBorrow > 0 || totalBorrowed > 0
+                                        hasInvest = totalInvest > 0
 
-                                        when {
-                                            hasSpend && hasBorrow -> {
-                                                clickedDate = fullDate
-                                                showChoiceDialog = true
-                                            }
-                                            hasSpend -> navController.navigate("dailyDetail/$fullDate")
-                                            hasBorrow -> navController.navigate("lendBorrowList/$fullDate")
+                                        if ((hasSpend && hasBorrow) || (hasSpend && hasInvest) || (hasBorrow && hasInvest)) {
+                                            clickedDate = fullDate
+                                            showChoiceDialog = true
+                                        } else if (hasSpend) {
+                                            navController.navigate("dailyDetail/$fullDate")
+                                        } else if (hasBorrow) {
+                                            navController.navigate("lendBorrowList/$fullDate")
+                                        } else if (hasInvest) {
+                                            navController.navigate("investmentDaily/$fullDate")
                                         }
                                     }
                                 } else mod
@@ -232,7 +239,6 @@ fun ShowMonthlyCalendar(
                             val totalExpense = dailyTransactions.filter { it.type.name == "EXPENSE" }.sumOf { it.getAmount() }
                             val totalIncome = dailyTransactions.filter { it.type.name == "INCOME" }.sumOf { it.getAmount() }
                             val totalInvest = dailyTransactions.filter { it.type.name == "INVEST" }.sumOf { it.getAmount() }
-
                             val dailyBorrows = borrowList.filter {
                                 SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(it.date) == fullDate
                             }
@@ -246,6 +252,7 @@ fun ShowMonthlyCalendar(
                                 if (totalIncome > 0) Text(formatWithCommas(totalIncome), fontSize = 12.sp, color = Color.Blue)
                                 if (totalBorrow > 0) Text(formatWithCommas(totalBorrow), fontSize = 12.sp, color = Color(0xFF6C3483))
                                 if (totalBorrowed > 0) Text(formatWithCommas(totalBorrowed), fontSize = 12.sp, color = Color(0xFF2874A6))
+                                // ✅ 显示投资金额不是个数
                                 if (totalInvest > 0) Text(formatWithCommas(totalInvest), fontSize = 12.sp, color = Color.Black)
                             }
                         }
@@ -259,19 +266,36 @@ fun ShowMonthlyCalendar(
         AlertDialog(
             onDismissRequest = { showChoiceDialog = false },
             title = { Text("어떤 내역을 확인하시겠어요?") },
-            text = { Text("이 날짜는 수입/지출 내역과 빌림/빌려준 내역이 모두 있습니다.") },
+            text = { Text("이 날짜는 수입/지출, 빌림/빌려준, 투자 내역이 있습니다.") },
             confirmButton = {
-                Button(onClick = {
-                    navController.navigate("dailyDetail/$clickedDate")
-                    showChoiceDialog = false
-                }) { Text("수입/지출 보기") }
+                Column {
+                    if (hasSpend) {
+                        Button(onClick = {
+                            navController.navigate("dailyDetail/$clickedDate")
+                            showChoiceDialog = false
+                        }) { Text("수입/지출 보기") }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    if (hasBorrow) {
+                        Button(onClick = {
+                            navController.navigate("lendBorrowList/$clickedDate")
+                            showChoiceDialog = false
+                        }) { Text("빌림/빌려준 보기") }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    if (hasInvest) {
+                        Button(onClick = {
+                            navController.navigate("investmentDaily/$clickedDate")
+                            showChoiceDialog = false
+                        }) { Text("투자 보기") }
+                    }
+                }
             },
-            dismissButton = {
-                Button(onClick = {
-                    navController.navigate("lendBorrowList/$clickedDate")
-                    showChoiceDialog = false
-                }) { Text("빌림/빌려준 보기") }
-            }
+            dismissButton = {}
         )
     }
 }
