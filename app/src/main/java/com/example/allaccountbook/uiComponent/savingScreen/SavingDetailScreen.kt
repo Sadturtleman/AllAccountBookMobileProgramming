@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -54,14 +55,22 @@ fun SavingDetailScreen(
     var goalAmount by remember {
         mutableIntStateOf(prefs.getInt("goal_amount", 100000))
     }
+    var showOnlyGoalSaving by remember { mutableStateOf(false) }
 
     val allList by viewmodel.transactions.collectAsState()
-    val savingList = allList.filterIsInstance<TransactionDetail.Saving>()
+    val fullSavingList = allList.filterIsInstance<TransactionDetail.Saving>()
+
+// ✅ showOnlyGoalSaving에 따라 필터링
+    val savingList = if (showOnlyGoalSaving) {
+        fullSavingList.filter { it.data.isGoal }
+    } else {
+        fullSavingList
+    }
 
     val goal = SavingGoal(
         name = goalName,
         goalAmount = goalAmount,
-        currentAmount = savingList.sumOf { it.data.price },
+        currentAmount = savingList.filter { it.data.isGoal }.sumOf { it.data.price },
         deadline = "2025-12-31"
     )
 
@@ -129,6 +138,7 @@ fun SavingDetailScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -159,6 +169,18 @@ fun SavingDetailScreen(
                 )
             }
         }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = showOnlyGoalSaving,
+                onCheckedChange = { showOnlyGoalSaving = it }
+            )
+            Text("목표 저축만 보기")
+        }
 
         Spacer(modifier = Modifier.height(12.dp))
         Divider(thickness = 1.dp, color = Color.Gray)
@@ -183,27 +205,46 @@ fun SavingDetailScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 6.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(log.name)
-                        Text("${log.interest}% 연이율", fontSize = MaterialTheme.typography.bodySmall.fontSize)
+                        Text(
+                            text = log.name,
+                            modifier = Modifier.weight(1f),
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Start,
+                            fontSize = 18.sp
+                        )
+                        Text(
+                            text = "${log.interest}% 연이율",
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.Center,
+                            fontSize = 16.sp
+                        )
                         Text(
                             text = "%,d원".format(log.amount),
                             modifier = Modifier
+                                .weight(1f)
                                 .clickable {
                                     selectedLog = log
                                     showAmountDialog = true
-                                }
-                                .padding(end = 8.dp),
-                            fontWeight = FontWeight.Medium
+                                },
+                            fontWeight = FontWeight.Medium,
+                            textAlign = TextAlign.End,
+                            fontSize = 18.sp
                         )
-                        IconButton(onClick = {
-                            savingLogMap[log]?.let {
-                                viewmodel.deleteTransaction(it)
-                            }
-                        }) {
-                            Icon(Icons.Default.Delete, contentDescription = "삭제", tint = MaterialTheme.colorScheme.error)
+                        IconButton(
+                            onClick = {
+                                savingLogMap[log]?.let {
+                                    viewmodel.deleteTransaction(it)
+                                }
+                            },
+                            modifier = Modifier.weight(0.3f)
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "삭제",
+                                tint = MaterialTheme.colorScheme.error
+                            )
                         }
                     }
                 }
