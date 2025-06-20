@@ -59,6 +59,7 @@ fun AddBorrowItemScreen(
     var investmentTendency by remember { mutableStateOf("") }
     var savingName by remember{mutableStateOf("")}
     var savingPrice by remember{mutableStateOf("")}
+    var savingInterest by remember { mutableStateOf("") } // 연이율(%) 입력용
 
     Column(
         modifier = Modifier
@@ -162,6 +163,13 @@ fun AddBorrowItemScreen(
                 label = { Text("저축 금액") },
                 modifier = Modifier.fillMaxWidth()
             )
+            OutlinedTextField(
+                value = savingInterest,
+                onValueChange = { savingInterest = it.filter { ch -> ch.isDigit() || ch == '.' } },
+                label = { Text("연이율 (%)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
         }
 
         Row(
@@ -319,7 +327,7 @@ fun AddBorrowItemScreen(
                                                 name = savingName,
                                                 startDate = currentDate,
                                                 endDate = currentDate,
-                                                percent = 10f,
+                                                percent = savingInterest.toFloatOrNull() ?: 0f,
                                             )
                                         )
                                     }
