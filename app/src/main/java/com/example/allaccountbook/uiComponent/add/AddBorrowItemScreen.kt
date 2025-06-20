@@ -60,6 +60,7 @@ fun AddBorrowItemScreen(
     var savingName by remember{mutableStateOf("")}
     var savingPrice by remember{mutableStateOf("")}
     var savingInterest by remember { mutableStateOf("") } // 연이율(%) 입력용
+    var isGoal by remember { mutableStateOf(true) } // 기본값 true 또는 false는 자유
 
     Column(
         modifier = Modifier
@@ -169,6 +170,14 @@ fun AddBorrowItemScreen(
                 label = { Text("연이율 (%)") },
                 modifier = Modifier.fillMaxWidth()
             )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("목표 저축으로 설정:")
+                Switch(checked = isGoal, onCheckedChange = { isGoal = it })
+            }
 
         }
 
@@ -327,6 +336,7 @@ fun AddBorrowItemScreen(
                                                 name = savingName,
                                                 startDate = currentDate,
                                                 endDate = currentDate,
+                                                isGoal = isGoal,
                                                 percent = savingInterest.toFloatOrNull() ?: 0f,
                                             )
                                         )

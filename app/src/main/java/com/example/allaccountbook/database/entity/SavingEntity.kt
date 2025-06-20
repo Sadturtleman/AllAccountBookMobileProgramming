@@ -32,5 +32,6 @@ data class SavingEntity (
     var price : Int,
     var name : String,
     var percent : Float,
-    var category: String = "저축"
+    var category: String = "저축",
+    var isGoal : Boolean = true
 )
