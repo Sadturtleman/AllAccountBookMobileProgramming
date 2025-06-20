@@ -23,6 +23,9 @@ import com.example.allaccountbook.viewmodel.view.TransactionViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.ui.Alignment
 import androidx.navigation.NavController
 import com.example.allaccountbook.database.model.getLocalDate
 import com.example.allaccountbook.uiPersistent.BottomNavBar
@@ -71,6 +74,24 @@ fun DailySpendingDetailScreen(
     }
 
     val totalAmount = filteredSpendings.sumOf { it.getAmount() }
+    var showDialog by remember { mutableStateOf<TransactionDetail?>(null) }
+
+    if (showDialog != null) {
+        AlertDialog(
+            onDismissRequest = { showDialog = null },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteTransaction(showDialog!!)
+                    showDialog = null
+                }) { Text("삭제") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = null }) { Text("취소") }
+            },
+            title = { Text("삭제 확인") },
+            text = { Text("정말 삭제하시겠습니까?") }
+        )
+    }
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -136,7 +157,6 @@ fun DailySpendingDetailScreen(
         }
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
         LazyColumn(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -146,12 +166,25 @@ fun DailySpendingDetailScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(detail.getName())
-                    Text("${formatWithCommas(detail.getAmount())}원")
-                    Text(detail.getCategory())
+                    Column {
+                        Text(detail.getName())
+                        Text(detail.getCategory(), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("${formatWithCommas(detail.getAmount())}원")
+
+                        IconButton(onClick = {
+                            showDialog = detail
+                        }) {
+                            Icon(imageVector = Icons.Default.Delete, contentDescription = "삭제")
+                        }
+
+                    }
                 }
             }
         }
+
 
         BottomNavBar(
             onHomeNavigate = { navController.navigate("home") },

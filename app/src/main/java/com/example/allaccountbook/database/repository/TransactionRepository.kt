@@ -122,4 +122,29 @@ class TransactionRepository @Inject constructor(
     suspend fun getInvestByName(name : String) : List<InvestEntity>? {
         return investDAO.getByName(name)
     }
+
+    suspend fun deleteDetail(detail: TransactionDetail) {
+        when (detail) {
+            is TransactionDetail.Saving -> {
+                savingDAO.DeleteSaving(detail.data)
+                transactionDAO.DeleteTransactionById(detail.data.transactionId)
+            }
+
+            is TransactionDetail.Income -> {
+                incomeDAO.DeleteIncome(detail.data)
+                transactionDAO.DeleteTransactionById(detail.data.transactionId)
+            }
+
+            is TransactionDetail.Expense -> {
+                expenseDAO.DeleteExpense(detail.data)
+                transactionDAO.DeleteTransactionById(detail.data.transactionId)
+            }
+
+            is TransactionDetail.Invest -> {
+                investDAO.DeleteInvest(detail.data)
+                transactionDAO.DeleteTransactionById(detail.data.transactionId)
+            }
+        }
+    }
+
 }

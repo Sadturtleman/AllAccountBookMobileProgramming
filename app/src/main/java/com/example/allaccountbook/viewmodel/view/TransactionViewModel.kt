@@ -129,4 +129,11 @@ class TransactionViewModel @Inject constructor(
             mockData.forEach { repository.insertDetail(it) }
         }
     }
+
+    fun deleteTransaction(detail: TransactionDetail) {
+        viewModelScope.launch {
+            repository.deleteDetail(detail)
+        }
+    }
+
 }
