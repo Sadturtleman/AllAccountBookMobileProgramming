@@ -66,7 +66,7 @@ fun SavingDetailScreen(
     val logs = savingList.map {
         SavingLog(
             name = it.data.name,
-            date = SimpleDateFormat("yyyy년 MM월 dd일", Locale.KOREA).format(it.data.startDate),
+            date = SimpleDateFormat("MM월 dd일", Locale.KOREA).format(it.data.startDate),
             amount = it.data.price
         )
     }
@@ -179,36 +179,45 @@ fun SavingDetailScreen(
         }
         Spacer(modifier = Modifier.height(12.dp))
         Divider(thickness = 1.dp, color = Color.Gray)
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text("저축 명", fontWeight = FontWeight.SemiBold)
-            Text("저축 날짜", fontWeight = FontWeight.SemiBold)
-            Text("저축 금액", fontWeight = FontWeight.SemiBold)
-        }
-        Spacer(modifier = Modifier.height(8.dp))
+
+
+
+        val groupedLogs = logs.groupBy { it.date }
+
         LazyColumn {
-            items(logs) { log ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(log.name)
-                    Text(log.date)
+            groupedLogs.forEach { (date, dailyLogs) ->
+                item {
                     Text(
-                        "${log.amount}원",
-                        modifier = Modifier.clickable {
-                            selectedLog = log
-                            showAmountDialog = true
-                        }
+                        text = date,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp, horizontal = 4.dp),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
                     )
+                }
+
+                items(dailyLogs) { log ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(log.name)
+                        Text(
+                            text = "%,d원".format(log.amount),
+                            modifier = Modifier.clickable {
+                                selectedLog = log
+                                showAmountDialog = true
+                            },
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
         }
+
         Spacer(modifier = Modifier.weight(1f))
         BottomNavBar(
             onHomeNavigate = { navController.navigate("home") },
