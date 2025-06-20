@@ -68,7 +68,7 @@ fun MainScreen(
     }
 
     val incomeList = transactions.filterIsInstance<TransactionDetail.Income>().filter {
-        it.data.date.toYearMonth() == selectedYearMonthgit
+        it.data.date.toYearMonth() == selectedYearMonth
     }
 
     val investList = transactions.filterIsInstance<TransactionDetail.Invest>().filter {
