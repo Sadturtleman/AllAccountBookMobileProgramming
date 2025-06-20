@@ -71,16 +71,12 @@ fun MainScreen(
         it.data.date.toYearMonth() == selectedYearMonth
     }
 
-    val borrowList = borrow.filter {
-        it.type == BorrowType.BORROW && it.date.toYearMonth() == selectedYearMonth
-    }
-
-    val lendList = borrow.filter {
-        it.type == BorrowType.BORROWED && it.date.toYearMonth() == selectedYearMonth
-    }
-
     val investList = transactions.filterIsInstance<TransactionDetail.Invest>().filter {
         it.data.date.toYearMonth() == selectedYearMonth
+    }
+
+    LaunchedEffect(Unit) {
+        borrowViewModel.loadAllBorrow()
     }
 
     val usagePercent by remember(expenseList, incomeList) {
@@ -142,25 +138,23 @@ fun MainScreen(
         }
     }
 
-    val getTotalLentAmount by remember(lendList) {
+    val getTotalLentAmount by remember(borrow) {
         derivedStateOf {
-            var total = 0
-            lendList.forEach {
-                if(!it.finished) total += it.price
-            }
-            total
+            borrow
+                .filter { it.type == BorrowType.BORROWED && !it.finished }
+                .sumOf { it.price }
         }
     }
 
-    val getTotalBorrowedAmount by remember(borrowList) {
+    val getTotalBorrowedAmount by remember(borrow) {
         derivedStateOf {
-            var total = 0
-            borrowList.forEach {
-                if(!it.finished) total += it.price
-            }
-            total
+            borrow
+                .filter { it.type == BorrowType.BORROW && !it.finished }
+                .sumOf { it.price }
         }
     }
+
+
 
     val fixedExpenseList = expenseList.filter { it.data.isFixed }
     val fixedIncomeList = incomeList.filter { it.data.isFixed }

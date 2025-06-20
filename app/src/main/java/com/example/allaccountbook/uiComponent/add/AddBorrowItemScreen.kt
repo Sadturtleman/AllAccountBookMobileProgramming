@@ -381,8 +381,8 @@ fun DropdownMenuTypeSelector(
     onSelect: (AddType) -> Unit
 ) {
     val options = listOf(
-        AddType.BORROWED to "빌려준",
-        AddType.BORROW to "빌린",
+        AddType.BORROWED to "빌린",
+        AddType.BORROW to "빌려준",
         AddType.INCOME to "수입",
         AddType.EXPENSE to "지출",
         AddType.SAVING to "저축",
