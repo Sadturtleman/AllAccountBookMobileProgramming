@@ -160,8 +160,8 @@ fun InvestmentDetailScreen(
                             existing.invCount += count
                             existing.invPriceTotal += price
                         } else {
+                            existing.invPriceTotal -= count * (existing.invPriceTotal / existing.invCount)
                             existing.invCount -= count
-                            existing.invPriceTotal -= count * existing.invAver
                             if (existing.invCount == 0) tempList.remove(existing)
                         }
                     } else {

@@ -71,7 +71,7 @@ fun InvestmentSummaryDetailScreen(
                 ) {
                     Text(it.data.type.label)
                     Text(
-                        it.data.company,
+                        "${it.data.company}, x ${it.data.count}",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray
                     )
