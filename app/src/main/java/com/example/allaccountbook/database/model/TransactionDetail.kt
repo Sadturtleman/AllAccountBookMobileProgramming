@@ -66,7 +66,7 @@ fun TransactionDetail.getAmount(): Int = when (this) {
     is TransactionDetail.Expense -> this.data.price
     is TransactionDetail.Income -> this.data.price
     is TransactionDetail.Saving -> this.data.price
-    is TransactionDetail.Invest -> this.data.count
+    is TransactionDetail.Invest -> this.data.count* this.data.price
 }
 
 fun TransactionDetail.getName(): String = when (this) {
