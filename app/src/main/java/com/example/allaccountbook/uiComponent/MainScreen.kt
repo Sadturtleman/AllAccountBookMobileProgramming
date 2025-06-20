@@ -96,7 +96,7 @@ fun MainScreen(
     }
 
     val getAvailableBalance by remember(incomeList) {
-        derivedStateOf { incomeList.sumOf { it.data.price } - expenseList.sumOf { it.data.price } - savingList.sumOf { it.data.price }}
+        derivedStateOf { incomeList.sumOf { it.data.price } - expenseList.sumOf { it.data.price } }
     }
 
     val getTotalInvestments by remember(investList) {

@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 object CategoryPreference {
@@ -36,4 +37,12 @@ object CategoryPreference {
             else -> 50000
         }
     }
+
+    suspend fun getAllCategoryAmounts(context: Context, categories: List<String>): Map<String, Int> {
+        val prefs = context.dataStore.data.first()  // Flow를 collect하지 않고 직접 fetch
+        return categories.associateWith { category ->
+            prefs[getAmountKey(category)] ?: getDefault(category)
+        }
+    }
+
 }

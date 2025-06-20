@@ -1,6 +1,7 @@
 package com.example.allaccountbook.viewmodel.view
 
 import android.app.Application
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,7 +16,7 @@ class AvailableViewModel @Inject constructor(
 ) : AndroidViewModel(context) {
 
     private val _categoryAmountMap = mutableStateMapOf<String, Int>()
-    val categoryAmountMap: Map<String, Int> get() = _categoryAmountMap
+    val categoryAmountMapState: SnapshotStateMap<String, Int> get() = _categoryAmountMap
 
     fun loadAmount(category: String) {
         viewModelScope.launch {
@@ -31,4 +32,24 @@ class AvailableViewModel @Inject constructor(
             _categoryAmountMap[category] = amount
         }
     }
+
+    fun deleteCategoryAmount(category: String) {
+        viewModelScope.launch {
+            CategoryPreference.saveCategoryAmount(context, category, 0)
+            _categoryAmountMap.remove(category)
+        }
+    }
+    fun loadAllAmounts(categories: List<String>) {
+        viewModelScope.launch {
+            val all = CategoryPreference.getAllCategoryAmounts(context, categories)
+            _categoryAmountMap.putAll(all)
+        }
+    }
+    fun preloadAllCategoryAmounts(categories: List<String>) {
+        viewModelScope.launch {
+            val loaded = CategoryPreference.getAllCategoryAmounts(context, categories)
+            _categoryAmountMap.putAll(loaded)
+        }
+    }
+
 }
