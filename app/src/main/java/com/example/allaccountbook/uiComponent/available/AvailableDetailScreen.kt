@@ -29,6 +29,7 @@ import java.text.SimpleDateFormat
 import java.time.YearMonth
 import java.util.*
 
+
 @Composable
 fun AvailableDetailScreen(
     navController: NavController,
@@ -52,16 +53,9 @@ fun AvailableDetailScreen(
     }
 
     val transactions = transactionViewModel.transactions.collectAsState()
-    val predefinedCategories = remember { mutableStateListOf("음식점", "문화시설") }
-    val categoryAmountMap = availableViewModel.categoryAmountMapState
-
+    val categories by availableViewModel.categoriesState.collectAsState()
+    val categoryAmountMap by availableViewModel.categoryAmountMapState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-
-    LaunchedEffect(predefinedCategories.toList()) {
-        val allCategories = predefinedCategories + "기타"
-        availableViewModel.preloadAllCategoryAmounts(allCategories)
-        allCategories.forEach { availableViewModel.loadAmount(it) }
-    }
 
     val incomeByCategory = remember(transactions.value, selectedYearMonth) {
         transactions.value
@@ -73,14 +67,14 @@ fun AvailableDetailScreen(
 
     val incomeTotal = incomeByCategory.values.flatten().sumOf { it.price }
 
-    val monthlyCategoryInfoList = remember(transactions.value, selectedYearMonth, categoryAmountMap, predefinedCategories.toList()) {
+    val monthlyCategoryInfoList = remember(transactions.value, selectedYearMonth, categoryAmountMap, categories) {
         val expenseList = transactions.value
             .filterIsInstance<TransactionDetail.Expense>()
             .map { it.data }
             .filter { selectedYearMonth != null && it.date.toYearMonth() == selectedYearMonth }
 
         buildList {
-            for (category in predefinedCategories) {
+            for (category in categories) {
                 val spent = expenseList.filter { it.category == category }.sumOf { it.price }
                 val max = categoryAmountMap[category] ?: 0
                 add(
@@ -93,7 +87,7 @@ fun AvailableDetailScreen(
                 )
             }
 
-            val otherSpent = expenseList.filter { it.category !in predefinedCategories }.sumOf { it.price }
+            val otherSpent = expenseList.filter { it.category !in categories }.sumOf { it.price }
             val max = categoryAmountMap["기타"] ?: 0
             add(
                 MonthlyCategoryInfo(
@@ -153,11 +147,8 @@ fun AvailableDetailScreen(
 
         Button(
             onClick = {
-                if (newCategoryInput.isNotBlank()) {
-                    predefinedCategories.add(newCategoryInput)
-                    coroutineScope.launch {
-                        availableViewModel.loadAmount(newCategoryInput)
-                    }
+                if (newCategoryInput.isNotBlank() && newCategoryInput !in categories) {
+                    availableViewModel.addCategory(newCategoryInput)
                     newCategoryInput = ""
                 }
             },
@@ -222,18 +213,19 @@ fun AvailableDetailScreen(
                             .background(Color(0xFFA8F0A3), RoundedCornerShape(4.dp))
                             .padding(horizontal = 8.dp, vertical = 2.dp)
                     )
-                    IconButton(
-                        onClick = {
-                            predefinedCategories.remove(item.categoryName)
-                            availableViewModel.deleteCategoryAmount(item.categoryName)
-                        },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "카테고리 삭제",
-                            tint = Color.Red
-                        )
+                    if (item.categoryName != "기타") {
+                        IconButton(
+                            onClick = {
+                                availableViewModel.removeCategory(item.categoryName)
+                            },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "카테고리 삭제",
+                                tint = Color.Red
+                            )
+                        }
                     }
                 }
             }
@@ -286,7 +278,6 @@ fun AvailableDetailScreen(
                         val newAmount = input.toIntOrNull()
                         if (newAmount != null) {
                             availableViewModel.saveAmount(editingCategory!!, newAmount)
-                            availableViewModel.loadAmount(editingCategory!!)
                             editingCategory = null
                         }
                     }
@@ -311,7 +302,9 @@ fun AvailableDetailScreen(
     }
 }
 
-// MonthlyCategoryInfo remains unchanged
+
+fun defaultCategories(): List<String> = listOf("음식점", "문화시설")
+
 data class MonthlyCategoryInfo(
     val month: String,
     val categoryName: String,
