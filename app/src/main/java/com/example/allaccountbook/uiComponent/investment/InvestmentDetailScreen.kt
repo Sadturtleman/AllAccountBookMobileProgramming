@@ -3,48 +3,53 @@ package com.example.allaccountbook.uiComponent.investment
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.allaccountbook.database.entity.InvestEntity
 import com.example.allaccountbook.database.model.InvestType
 import com.example.allaccountbook.database.model.TransactionDetail
-import com.example.allaccountbook.uiComponent.add.AddType
-import com.example.allaccountbook.uiComponent.investment.InvestInfo
 import com.example.allaccountbook.uiComponent.toYearMonth
 import com.example.allaccountbook.uiPersistent.BottomNavBar
-import com.example.allaccountbook.uiPersistent.CustomDatePickerDialog
 import com.example.allaccountbook.viewmodel.view.TransactionViewModel
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
-import java.util.Locale
-
+import java.util.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.sp
 
 data class InvestInfo(
-    val invName : String,
-    var invCount : Int,
-    var invPriceTotal : Int,
-    val invAver: Int = invPriceTotal / invCount,
-    val invCategory : String
-)
+    val invName: String,
+    var invCount: Int,
+    var invPriceTotal: Int,
+    val invCategory: String
+) {
+    val invAver: Int
+        get() = if (invCount > 0) invPriceTotal / invCount else 0
+}
 
 data class InvestTrendInfo(
-    val trendName : String,
-    var trandHoldPercent : Int,
-    var trandTotalPrice : Int
+    val trendName: String,
+    var trandHoldPercent: Int,
+    var trandTotalPrice: Int
 )
 
 @Composable
-fun InvestmentDetailScreen(navController: NavController, selectedDate : String, viewmodel : TransactionViewModel = hiltViewModel()) {
+fun InvestmentDetailScreen(
+    navController: NavController,
+    selectedDate: String,
+    viewmodel: TransactionViewModel = hiltViewModel()
+) {
     var selectedMonth by remember { mutableStateOf(selectedDate) }
     val selectedDateFormat = remember { SimpleDateFormat("yyyy년 M월", Locale.KOREA) }
-    val selectedDateObj = remember(selectedDate) {
-        selectedDateFormat.parse(selectedDate)
-    }
+    val selectedDateObj = remember(selectedDate) { selectedDateFormat.parse(selectedDate) }
     val selectedYearMonth = selectedDateObj?.toYearMonth()
 
     var viewMode by remember { mutableStateOf("전체") }
@@ -53,14 +58,14 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
     var showTrendDialog by remember { mutableStateOf(false) }
 
     val transactions = viewmodel.transactions.collectAsState()
-// 1. 투자 항목 필터링 (선택 월 기준)
+    val formatter = remember { NumberFormat.getNumberInstance(Locale.KOREA) }
+
     val investList by remember(transactions.value, selectedYearMonth) {
         derivedStateOf {
             transactions.value
                 .filterIsInstance<TransactionDetail.Invest>()
                 .filter {
-                    selectedYearMonth != null &&
-                            it.data.date.toYearMonth() == selectedYearMonth
+                    selectedYearMonth != null && it.data.date.toYearMonth() == selectedYearMonth
                 }
         }
     }
@@ -77,21 +82,25 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = selectedMonth,
-                modifier = Modifier
-                    .background(Color.LightGray)
-                    .padding(8.dp)
-            )
+            OutlinedButton(
+                onClick = { /* optional calendar */ },
+                shape = RoundedCornerShape(6.dp),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Text(text = selectedMonth, fontSize = 15.sp)
+            }
 
             Box {
-                Text(
-                    text = if (viewMode == "전체") "투자 전체 보기 ▼" else "투자 성향별 보기 ▼",
-                    modifier = Modifier
-                        .background(Color.LightGray)
-                        .clickable { expanded = true }
-                        .padding(8.dp)
-                )
+                Button(
+                    onClick = { expanded = true },
+                    shape = RoundedCornerShape(6.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = if (viewMode == "전체") "투자 전체 보기 ▼" else "투자 성향별 보기 ▼",
+                        fontSize = 14.sp
+                    )
+                }
 
                 DropdownMenu(
                     expanded = expanded,
@@ -118,18 +127,18 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
         Spacer(modifier = Modifier.height(16.dp))
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp)
         ) {
             if (viewMode == "전체") {
-                Text("소유 종목")
-                Text("소유 개수")
-                Text("평균 단가")
-                Text("총액")
+                Text("소유 종목", modifier = Modifier.weight(1f), textAlign = TextAlign.Start, fontWeight = FontWeight.Bold)
+                Text("평균 단가", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+                Text("총액", modifier = Modifier.weight(1f), textAlign = TextAlign.End, fontWeight = FontWeight.Bold)
             } else {
-                Text("투자 성향")
-                Text("현재 보유율")
-                Text("현재 보유량")
+                Text("투자 성향", modifier = Modifier.weight(1f), textAlign = TextAlign.Start, fontWeight = FontWeight.Bold)
+                Text("현재 보유율", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+                Text("현재 보유량", modifier = Modifier.weight(1f), textAlign = TextAlign.End, fontWeight = FontWeight.Bold)
             }
         }
 
@@ -153,26 +162,18 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
                         } else {
                             existing.invCount -= count
                             existing.invPriceTotal -= count * existing.invAver
-                            if(existing.invCount == 0){
-                                tempList.remove(existing)
-
-                            }
+                            if (existing.invCount == 0) tempList.remove(existing)
                         }
                     } else {
                         if (type == InvestType.BUY) {
-                            tempList.add(InvestInfo(
-                                name, count, price,
-                                invCategory = category
-                            ))
+                            tempList.add(InvestInfo(name, count, price, invCategory = category))
                         }
                     }
-
                 }
                 tempList
             }
         }
 
-        // 처음 구매했을 때 입력한 카테고리를 기준으로 계산
         val categoryStorage by remember(investList) {
             derivedStateOf {
                 val tempList = mutableListOf<InvestTrendInfo>()
@@ -180,22 +181,19 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
                 nameStorage.forEach { invest ->
                     val category = invest.invCategory
                     val TotalPrice = invest.invPriceTotal
-
-                    val existing = tempList.find { it.trendName == category}
+                    val existing = tempList.find { it.trendName == category }
                     if (existing != null) {
                         existing.trandTotalPrice += TotalPrice
                         total += TotalPrice
                         existing.trandHoldPercent = (existing.trandTotalPrice * 100) / total
                     } else {
                         total += TotalPrice
-                        tempList.add(InvestTrendInfo(category, (TotalPrice * 100) / total,TotalPrice ))
+                        tempList.add(InvestTrendInfo(category, (TotalPrice * 100) / total, TotalPrice))
                     }
-
                 }
                 tempList
             }
         }
-
 
         Column(modifier = Modifier.fillMaxWidth()) {
             if (viewMode == "전체") {
@@ -203,50 +201,68 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .height(56.dp)
                             .clickable {
                                 selectedItemName = it.invName
                                 showDialog = true
-                            }
-                            .padding(vertical = 4.dp),
+                            },
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(it.invName)
-                        Text(it.invCount.toString())
-                        Text(it.invAver.toString())
-                        Text(it.invPriceTotal.toString())
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.Bottom,
+                            horizontalAlignment = Alignment.Start
+                        ) {
+                            Text(it.invName)
+                            Text("x${it.invCount}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        }
+
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.Bottom,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(if (it.invCount > 0) "${formatter.format(it.invAver)}원" else "-")
+                        }
+
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.Bottom,
+                            horizontalAlignment = Alignment.End
+                        ) {
+                            Text("${formatter.format(it.invPriceTotal)}원")
+                        }
                     }
                 }
             } else {
                 var total = 0
-                categoryStorage.forEach { categoryList->
+                categoryStorage.forEach { categoryList ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
                                 selectedItemCategory = categoryList.trendName
-                                showTrendDialog = true // 필요시 category 이름도 넘길 수 있음
+                                showTrendDialog = true
                             }
                             .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(categoryList.trendName)
-                        Text("${ categoryList.trandHoldPercent } %")
-                        Text(categoryList.trandTotalPrice.toString())
+                        Text("${categoryList.trandHoldPercent} %", textAlign = TextAlign.End)
+                        Text("${formatter.format(categoryList.trandTotalPrice)}원", textAlign = TextAlign.End)
                     }
                     total += categoryList.trandTotalPrice
                 }
 
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("총")
-                    Text("-")
-                    Text(total.toString())
+                    Text("총", fontWeight = FontWeight.Bold)
+                    Text("-", fontWeight = FontWeight.Bold)
+                    Text("${formatter.format(categoryStorage.sumOf { it.trandTotalPrice })}원", fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -268,5 +284,3 @@ fun InvestmentDetailScreen(navController: NavController, selectedDate : String, 
         )
     }
 }
-
-
