@@ -68,7 +68,7 @@ fun MainScreen(
     }
 
     val incomeList = transactions.filterIsInstance<TransactionDetail.Income>().filter {
-        it.data.date.toYearMonth() == selectedYearMonth
+        it.data.date.toYearMonth() == selectedYearMonthgit
     }
 
     val investList = transactions.filterIsInstance<TransactionDetail.Invest>().filter {
@@ -83,7 +83,7 @@ fun MainScreen(
         derivedStateOf {
             val expense = expenseList.sumOf { it.data.price }.toFloat()
             val income = incomeList.sumOf { it.data.price }
-            if (income == 0) 0f else expense / income * 100
+            if (income == 0) 0f else (1 - expense / income) * 100
         }
     }
 
