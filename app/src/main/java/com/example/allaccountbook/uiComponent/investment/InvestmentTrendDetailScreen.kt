@@ -1,12 +1,14 @@
 package com.example.allaccountbook.uiComponent.investment
 
-
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -15,8 +17,7 @@ import com.example.allaccountbook.uiComponent.toYearMonth
 import com.example.allaccountbook.uiPersistent.BottomNavBar
 import com.example.allaccountbook.viewmodel.view.TransactionViewModel
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 @Composable
 fun InvestmentTrendDetailScreen(
@@ -29,23 +30,29 @@ fun InvestmentTrendDetailScreen(
     val selectedDateObj = selectedDateFormat.parse(selectedDate)
 
     val transactions = viewmodel.transactions.collectAsState()
-    val investList = transactions.value.filterIsInstance<TransactionDetail.Invest>()
+    val investList = transactions.value
+        .filterIsInstance<TransactionDetail.Invest>()
         .filter { it.data.date.toYearMonth() == selectedDateObj?.toYearMonth() }
         .filter { it.data.category == category }
 
+    val dateFormatter = remember { SimpleDateFormat("MM월 dd일", Locale.KOREA) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text("$category - 투자 내역", modifier = Modifier.padding(bottom = 16.dp))
+        Text(
+            text = "$category - 투자 내역",
+            modifier = Modifier.padding(bottom = 16.dp),
+            style = MaterialTheme.typography.titleMedium
+        )
 
+       
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("날짜")
-            Text("매도/매수")
-            Text("매매 금액")
-            Text("종목")
+            Text("종목", modifier = Modifier.weight(1f))
+            Text("금액", modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            Text("날짜", modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.End)
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -57,15 +64,33 @@ fun InvestmentTrendDetailScreen(
                     .padding(vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(it.data.date.formatToString())
-                Text(it.data.type.label)
-                Text((it.data.count * it.data.price).toString())
-                Text(it.data.name)
+            
+                Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
+                    Text(it.data.name)
+                    Text(
+                        text = it.data.type.label,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                }
+
+           
+                Text(
+                    text = "${it.data.count * it.data.price}원",
+                    modifier = Modifier.weight(1f),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+
+                Text(
+                    text = dateFormatter.format(it.data.date),
+                    modifier = Modifier.weight(1f),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.End
+                )
             }
         }
 
-
         Spacer(modifier = Modifier.weight(1f))
+
         BottomNavBar(
             onHomeNavigate = { navController.navigate("home") },
             onDateNavigate = { navController.navigate("date") },
