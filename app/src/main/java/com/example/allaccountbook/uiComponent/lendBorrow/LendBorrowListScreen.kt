@@ -166,10 +166,6 @@ fun LendBorrowListScreen(
             }
 
             Spacer(modifier = Modifier.height(8.dp))
-
-            Button(onClick = { viewModel.resetAndInsertDummyData() }) {
-                Text("DB 초기화 + 더미 삽입")
-            }
         }
     }
 }
