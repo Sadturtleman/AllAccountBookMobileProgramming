@@ -4,8 +4,6 @@ package com.example.allaccountbook.uiComponent.lendBorrow
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
@@ -24,7 +22,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
-import com.example.allaccountbook.model.BorrowMoney
 import com.example.allaccountbook.uiComponent.toYearMonth
 import com.example.allaccountbook.uiPersistent.BottomNavBar
 import com.example.allaccountbook.uiPersistent.formatWithCommas
@@ -57,24 +54,6 @@ fun LendBorrowListScreen(
         }
         val unpaidMatch = if (showUnpaidOnly) !it.finished else true
         typeMatch && unpaidMatch
-    }
-    var itemToDelete by remember { mutableStateOf<BorrowMoney?>(null) }
-
-    if (itemToDelete != null) {
-        AlertDialog(
-            onDismissRequest = { itemToDelete = null },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.deleteBorrow(itemToDelete!!)
-                    itemToDelete = null
-                }) { Text("삭제") }
-            },
-            dismissButton = {
-                TextButton(onClick = { itemToDelete = null }) { Text("취소") }
-            },
-            title = { Text("삭제 확인") },
-            text = { Text("정말 삭제하시겠습니까?") }
-        )
     }
 
     Scaffold(
@@ -152,12 +131,12 @@ fun LendBorrowListScreen(
                 Text("대상", fontSize = 16.sp)
                 Text("날짜", fontSize = 16.sp)
                 Text("완료여부", fontSize = 16.sp)
-                Text("삭제", fontSize = 16.sp)
             }
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 4.dp)
             )
+
             LazyColumn(modifier = Modifier.weight(1f)) {
                 itemsIndexed(filteredData) { _, item ->
                     Row(
@@ -171,30 +150,20 @@ fun LendBorrowListScreen(
                             TextStyle(textDecoration = TextDecoration.LineThrough)
                         else TextStyle.Default
 
-
                         Text(style = textStyle, text = item.reason)
                         Text(style = textStyle, text = formatWithCommas(item.price))
                         Text(style = textStyle, text = item.person)
                         Text(style = textStyle, text = item.date.formatToString())
-
-
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(
-                                checked = item.finished,
-                                onCheckedChange = {
-                                    val updated = item.copy(finished = it)
-                                    viewModel.updateBorrow(updated)
-                                }
-                            )
-                            IconButton(onClick = { itemToDelete = item }) {
-                                Icon(Icons.Default.Delete, contentDescription = "삭제", tint = MaterialTheme.colorScheme.error)
+                        Checkbox(
+                            checked = item.finished,
+                            onCheckedChange = {
+                                val updated = item.copy(finished = it)
+                                viewModel.updateBorrow(updated)
                             }
-
-                        }
+                        )
                     }
                 }
             }
-
 
             Spacer(modifier = Modifier.height(8.dp))
 
