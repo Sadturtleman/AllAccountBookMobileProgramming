@@ -42,8 +42,8 @@ fun NavGraphBuilder.LoginNavGraph(navController: NavHostController) {
     composable("savingDetail") { SavingDetailScreen(navController) }
 
     // 투자 상세 페이지 (전체/성향)
-    composable("investmentDetail/{selectedDate}") {
-        val date = it.arguments?.getString("selectedDate") ?: ""
+    composable("investmentDaily/{selectedDate}") { backStackEntry ->
+        val date = backStackEntry.arguments?.getString("selectedDate") ?: ""
         val displayDate = convertToKoreanDate(date)
 
         InvestmentDetailScreen(selectedDate = displayDate, navController = navController)
