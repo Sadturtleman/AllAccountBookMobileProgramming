@@ -1,5 +1,6 @@
 package com.example.allaccountbook.uiComponent.showDaily
 
+import android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -206,8 +207,8 @@ fun ShowMonthlyCalendar(
                                         val dailyBorrows = borrowList.filter {
                                             SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(it.date) == fullDate
                                         }
-                                        val totalBorrow = dailyBorrows.filter { it.type.name == "BORROW" }.sumOf { it.price }
-                                        val totalBorrowed = dailyBorrows.filter { it.type.name == "BORROWED" }.sumOf { it.price }
+                                        val totalBorrow = dailyBorrows.filter { it.type.name == "BORROW" }.filter { !it.finished }.sumOf { it.price }
+                                        val totalBorrowed = dailyBorrows.filter { it.type.name == "BORROWED" }.filter { !it.finished }.sumOf { it.price }
 
                                         val hasSpend = totalExpense > 0 || totalIncome > 0
                                         val hasBorrow = totalBorrow > 0 || totalBorrowed > 0
@@ -230,20 +231,22 @@ fun ShowMonthlyCalendar(
                             val dailyTransactions = filteredData.filter { it.getDate() == fullDate }
                             val totalExpense = dailyTransactions.filter { it.type.name == "EXPENSE" }.sumOf { it.getAmount() }
                             val totalIncome = dailyTransactions.filter { it.type.name == "INCOME" }.sumOf { it.getAmount() }
+                            val totalInvest = dailyTransactions.filter { it.type.name == "INVEST" }.sumOf { it.getAmount() }
 
                             val dailyBorrows = borrowList.filter {
                                 SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(it.date) == fullDate
                             }
-                            val totalBorrow = dailyBorrows.filter { it.type.name == "BORROW" }.sumOf { it.price }
-                            val totalBorrowed = dailyBorrows.filter { it.type.name == "BORROWED" }.sumOf { it.price }
+                            val totalBorrow = dailyBorrows.filter { it.type.name == "BORROW" }.filter { !it.finished }.sumOf { it.price }
+                            val totalBorrowed = dailyBorrows.filter { it.type.name == "BORROWED" }.filter { !it.finished }.sumOf { it.price }
 
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text("$day", fontSize = 13.sp, fontWeight = FontWeight.Bold)
                                 Spacer(Modifier.height(4.dp))
-                                if (totalExpense > 0) Text("${formatWithCommas(totalExpense)}원", fontSize = 12.sp, color = Color.Red)
-                                if (totalIncome > 0) Text("${formatWithCommas(totalIncome)}원", fontSize = 12.sp, color = Color.Blue)
-                                if (totalBorrow > 0) Text("${formatWithCommas(totalBorrow)}원", fontSize = 12.sp, color = Color(0xFF6C3483))
-                                if (totalBorrowed > 0) Text("${formatWithCommas(totalBorrowed)}원", fontSize = 12.sp, color = Color(0xFF2874A6))
+                                if (totalExpense > 0) Text(formatWithCommas(totalExpense), fontSize = 12.sp, color = Color.Red)
+                                if (totalIncome > 0) Text(formatWithCommas(totalIncome), fontSize = 12.sp, color = Color.Blue)
+                                if (totalBorrow > 0) Text(formatWithCommas(totalBorrow), fontSize = 12.sp, color = Color(0xFF6C3483))
+                                if (totalBorrowed > 0) Text(formatWithCommas(totalBorrowed), fontSize = 12.sp, color = Color(0xFF2874A6))
+                                if (totalInvest > 0) Text(formatWithCommas(totalInvest), fontSize = 12.sp, color = Color.Black)
                             }
                         }
                     }
