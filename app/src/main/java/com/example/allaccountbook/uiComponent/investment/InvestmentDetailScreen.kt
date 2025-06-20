@@ -37,7 +37,6 @@ data class InvestInfo(
 
 data class InvestTrendInfo(
     val trendName: String,
-    var trandHoldPercent: Int,
     var trandTotalPrice: Int
 )
 
@@ -56,6 +55,7 @@ fun InvestmentDetailScreen(
     var expanded by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     var showTrendDialog by remember { mutableStateOf(false) }
+    var total by remember { mutableStateOf(0) }
 
     val transactions = viewmodel.transactions.collectAsState()
     val formatter = remember { NumberFormat.getNumberInstance(Locale.KOREA) }
@@ -177,7 +177,7 @@ fun InvestmentDetailScreen(
         val categoryStorage by remember(investList) {
             derivedStateOf {
                 val tempList = mutableListOf<InvestTrendInfo>()
-                var total = 0
+
                 nameStorage.forEach { invest ->
                     val category = invest.invCategory
                     val TotalPrice = invest.invPriceTotal
@@ -185,10 +185,9 @@ fun InvestmentDetailScreen(
                     if (existing != null) {
                         existing.trandTotalPrice += TotalPrice
                         total += TotalPrice
-                        existing.trandHoldPercent = (existing.trandTotalPrice * 100) / total
                     } else {
                         total += TotalPrice
-                        tempList.add(InvestTrendInfo(category, (TotalPrice * 100) / total, TotalPrice))
+                        tempList.add(InvestTrendInfo(category,TotalPrice))
                     }
                 }
                 tempList
@@ -235,7 +234,6 @@ fun InvestmentDetailScreen(
                     }
                 }
             } else {
-                var total = 0
                 categoryStorage.forEach { categoryList ->
                     Row(
                         modifier = Modifier
@@ -247,11 +245,11 @@ fun InvestmentDetailScreen(
                             .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
+                        val trandHoldPercent = if(total == 0) 0 else (categoryList.trandTotalPrice * 100) / total
                         Text(categoryList.trendName)
-                        Text("${categoryList.trandHoldPercent} %", textAlign = TextAlign.End)
+                        Text("$trandHoldPercent %", textAlign = TextAlign.End)
                         Text("${formatter.format(categoryList.trandTotalPrice)}원", textAlign = TextAlign.End)
                     }
-                    total += categoryList.trandTotalPrice
                 }
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
