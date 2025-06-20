@@ -1,6 +1,7 @@
 package com.example.allaccountbook.uiComponent.savingScreen
 
 import android.content.Context
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -60,7 +62,6 @@ fun SavingDetailScreen(
     val allList by viewmodel.transactions.collectAsState()
     val fullSavingList = allList.filterIsInstance<TransactionDetail.Saving>()
 
-// ✅ showOnlyGoalSaving에 따라 필터링
     val savingList = if (showOnlyGoalSaving) {
         fullSavingList.filter { it.data.isGoal }
     } else {
@@ -74,7 +75,6 @@ fun SavingDetailScreen(
         deadline = "2025-12-31"
     )
 
-    // 🔁 SavingLog ↔ TransactionDetail.Saving 매핑
     val savingLogMap = remember(savingList) {
         savingList.associateBy {
             SavingLog(
@@ -138,7 +138,6 @@ fun SavingDetailScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -169,6 +168,7 @@ fun SavingDetailScreen(
                 )
             }
         }
+
         Spacer(modifier = Modifier.height(8.dp))
 
         Row(
@@ -185,67 +185,91 @@ fun SavingDetailScreen(
         Spacer(modifier = Modifier.height(12.dp))
         Divider(thickness = 1.dp, color = Color.Gray)
 
-        val groupedLogs = logs.groupBy { it.date }
+        val groupedByName = logs.groupBy { it.name }
 
         LazyColumn {
-            groupedLogs.forEach { (date, dailyLogs) ->
-                item {
-                    Text(
-                        text = date,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp, horizontal = 4.dp),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+            groupedByName.forEach { (name, sameNameLogs) ->
+                val totalAmount = sameNameLogs.sumOf { it.amount }
+                val savingCount = sameNameLogs.size
 
-                items(dailyLogs) { log ->
+                item {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 6.dp),
+                            .padding(start = 8.dp, top = 8.dp, bottom = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Text("이름: $name", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                        Text("총합: %,d원 / ${savingCount}회".format(totalAmount), fontSize = 18.sp, color = Color.DarkGray)
+                    }
+                }
+
+                val groupedByDate = sameNameLogs.groupBy { it.date }
+                groupedByDate.forEach { (date, dailyLogs) ->
+                    item {
                         Text(
-                            text = log.name,
-                            modifier = Modifier.weight(1f),
-                            fontWeight = FontWeight.SemiBold,
-                            textAlign = TextAlign.Start,
-                            fontSize = 18.sp
-                        )
-                        Text(
-                            text = "${log.interest}% 연이율",
-                            modifier = Modifier.weight(1f),
-                            textAlign = TextAlign.Center,
-                            fontSize = 16.sp
-                        )
-                        Text(
-                            text = "%,d원".format(log.amount),
+                            text = "📅 $date",
                             modifier = Modifier
-                                .weight(1f)
-                                .clickable {
-                                    selectedLog = log
-                                    showAmountDialog = true
-                                },
-                            fontWeight = FontWeight.Medium,
-                            textAlign = TextAlign.End,
-                            fontSize = 18.sp
+                                .fillMaxWidth()
+                                .padding(start = 16.dp, top = 6.dp)
+                                .background(Color(0xFFE3F2FD))
+                                .padding(6.dp),
+                            fontWeight = FontWeight.Bold,
+                            fontStyle = FontStyle.Italic,
+                            fontSize = 20.sp
                         )
-                        IconButton(
-                            onClick = {
-                                savingLogMap[log]?.let {
-                                    viewmodel.deleteTransaction(it)
-                                }
-                            },
-                            modifier = Modifier.weight(0.3f)
+                    }
+
+                    items(dailyLogs) { log ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFFF5F5F5))
+                                .padding(start = 24.dp, top = 6.dp, bottom = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                Icons.Default.Delete,
-                                contentDescription = "삭제",
-                                tint = MaterialTheme.colorScheme.error
+                            Text(
+                                text = log.name,
+                                modifier = Modifier.weight(1f),
+                                fontWeight = FontWeight.Medium,
+                                textAlign = TextAlign.Start,
+                                fontSize = 17.sp
                             )
+                            Text(
+                                text = "${log.interest}% 연이율",
+                                modifier = Modifier.weight(1f),
+                                textAlign = TextAlign.Center,
+                                fontSize = 15.sp
+                            )
+                            Text(
+                                text = "% ,d원".format(log.amount),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable {
+                                        selectedLog = log
+                                        showAmountDialog = true
+                                    },
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.End,
+                                fontSize = 17.sp
+                            )
+                            IconButton(
+                                onClick = {
+                                    savingLogMap[log]?.let {
+                                        viewmodel.deleteTransaction(it)
+                                    }
+                                },
+                                modifier = Modifier.weight(0.3f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "삭제",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
                         }
+                        Divider(color = Color.LightGray, thickness = 0.7.dp)
                     }
                 }
             }
