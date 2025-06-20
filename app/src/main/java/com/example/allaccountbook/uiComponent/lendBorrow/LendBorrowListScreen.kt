@@ -152,6 +152,7 @@ fun LendBorrowListScreen(
                 Text("대상", fontSize = 16.sp)
                 Text("날짜", fontSize = 16.sp)
                 Text("완료여부", fontSize = 16.sp)
+                Text("삭제", fontSize = 16.sp)
             }
 
             HorizontalDivider(
@@ -170,12 +171,12 @@ fun LendBorrowListScreen(
                             TextStyle(textDecoration = TextDecoration.LineThrough)
                         else TextStyle.Default
 
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(style = textStyle, text = item.reason)
-                            Text(style = textStyle, text = formatWithCommas(item.price))
-                            Text(style = textStyle, text = item.person)
-                            Text(style = textStyle, text = item.date.formatToString())
-                        }
+
+                        Text(style = textStyle, text = item.reason)
+                        Text(style = textStyle, text = formatWithCommas(item.price))
+                        Text(style = textStyle, text = item.person)
+                        Text(style = textStyle, text = item.date.formatToString())
+
 
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Checkbox(
