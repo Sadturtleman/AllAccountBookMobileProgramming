@@ -1,11 +1,12 @@
 package com.example.allaccountbook.uiComponent.savingScreen
 
-
 import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,7 +24,7 @@ import com.example.allaccountbook.database.model.TransactionDetail
 import com.example.allaccountbook.uiPersistent.BottomNavBar
 import com.example.allaccountbook.viewmodel.view.TransactionViewModel
 import java.text.SimpleDateFormat
-import java.util.Locale
+import java.util.*
 
 @Preview(showBackground = true)
 @Composable
@@ -35,7 +36,8 @@ fun SavingDetailScreenPreview() {
 data class SavingLog(
     var name: String,
     val date: String,
-    val amount: Int
+    val amount: Int,
+    val interest: Float
 )
 
 @Composable
@@ -63,13 +65,18 @@ fun SavingDetailScreen(
         deadline = "2025-12-31"
     )
 
-    val logs = savingList.map {
-        SavingLog(
-            name = it.data.name,
-            date = SimpleDateFormat("MM월 dd일", Locale.KOREA).format(it.data.startDate),
-            amount = it.data.price
-        )
+    // 🔁 SavingLog ↔ TransactionDetail.Saving 매핑
+    val savingLogMap = remember(savingList) {
+        savingList.associateBy {
+            SavingLog(
+                name = it.data.name,
+                date = SimpleDateFormat("MM월 dd일", Locale.KOREA).format(it.data.startDate),
+                amount = it.data.price,
+                interest = it.data.percent
+            )
+        }
     }
+    val logs = savingLogMap.keys.toList()
 
     val achievementRate = goal.achievementRate
     var showGoalDialog by remember { mutableStateOf(false) }
@@ -85,7 +92,7 @@ fun SavingDetailScreen(
         SavingAmountDialog(
             navController = navController,
             onDismiss = { showAmountDialog = false },
-            onConfirm = { newAmount, newName ->
+            onConfirm = { newAmount, _ ->
                 goalAmount = newAmount
                 prefs.edit().putInt("goal_amount", newAmount).apply()
                 showAmountDialog = false
@@ -105,7 +112,6 @@ fun SavingDetailScreen(
             }
         )
     }
-
     if (showGoalAmountDialog) {
         GoalAmountDialog(
             currentAmount = goalAmount,
@@ -127,40 +133,16 @@ fun SavingDetailScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                "목표명",
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                "목표 금액",
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                "달성률",
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.SemiBold
-            )
+            Text("목표명", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.SemiBold)
+            Text("목표 금액", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.SemiBold)
+            Text("달성률", modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.SemiBold)
         }
+
         Spacer(modifier = Modifier.height(6.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                goal.name, modifier = Modifier
-                    .weight(1f)
-                    .clickable { showNameDialog = true }, textAlign = TextAlign.Center
-            )
-            Text("${goal.goalAmount}원", modifier = Modifier
-                .weight(1f)
-                .clickable {
-                    showGoalAmountDialog = true
-                }, textAlign = TextAlign.Center)
+
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(goal.name, modifier = Modifier.weight(1f).clickable { showNameDialog = true }, textAlign = TextAlign.Center)
+            Text("${goal.goalAmount}원", modifier = Modifier.weight(1f).clickable { showGoalAmountDialog = true }, textAlign = TextAlign.Center)
             Column(modifier = Modifier.weight(1f)) {
                 Text("${achievementRate}%", textAlign = TextAlign.Center)
                 LinearProgressIndicator(
@@ -177,10 +159,9 @@ fun SavingDetailScreen(
                 )
             }
         }
+
         Spacer(modifier = Modifier.height(12.dp))
         Divider(thickness = 1.dp, color = Color.Gray)
-
-
 
         val groupedLogs = logs.groupBy { it.date }
 
@@ -202,17 +183,28 @@ fun SavingDetailScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 6.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(log.name)
+                        Text("${log.interest}% 연이율", fontSize = MaterialTheme.typography.bodySmall.fontSize)
                         Text(
                             text = "%,d원".format(log.amount),
-                            modifier = Modifier.clickable {
-                                selectedLog = log
-                                showAmountDialog = true
-                            },
+                            modifier = Modifier
+                                .clickable {
+                                    selectedLog = log
+                                    showAmountDialog = true
+                                }
+                                .padding(end = 8.dp),
                             fontWeight = FontWeight.Medium
                         )
+                        IconButton(onClick = {
+                            savingLogMap[log]?.let {
+                                viewmodel.deleteTransaction(it)
+                            }
+                        }) {
+                            Icon(Icons.Default.Delete, contentDescription = "삭제", tint = MaterialTheme.colorScheme.error)
+                        }
                     }
                 }
             }
