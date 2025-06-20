@@ -197,7 +197,7 @@ fun MainScreen(
                     navController.navigate("savingDetail")
                 }
                 InfoRow("투자 총계", formatWithCommas(getTotalInvestments)) {
-                navController.navigate("investmentDetail/${formatDateToDisplay(selectedDate)}")
+                navController.navigate("investmentDaily/${formatDateToDisplay(selectedDate)}")
             }
                 InfoRow("사용 가능 금액", formatWithCommas(getAvailableBalance)) {
                     navController.navigate("availableDetail/${formatDateToDisplay(selectedDate)}")
