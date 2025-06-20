@@ -202,10 +202,10 @@ fun MainScreen(
                 InfoRow("사용 가능 금액", formatWithCommas(getAvailableBalance)) {
                     navController.navigate("availableDetail/${formatDateToDisplay(selectedDate)}")
                 }
-                InfoRow("빌린 전체 금액", formatWithCommas(getTotalLentAmount)) {
+                InfoRow("빌려준 전체 금액", formatWithCommas(getTotalLentAmount)) {
                     navController.navigate("lendBorrowList/${formatDateToDisplay(selectedDate)}")
                 }
-                InfoRow("빌려준 금액", formatWithCommas(getTotalBorrowedAmount)) {
+                InfoRow("빌린 금액", formatWithCommas(getTotalBorrowedAmount)) {
                     navController.navigate("lendBorrowList/${formatDateToDisplay(selectedDate)}")
                 }
 
