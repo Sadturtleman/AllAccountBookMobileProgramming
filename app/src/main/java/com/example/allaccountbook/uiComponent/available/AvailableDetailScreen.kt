@@ -39,13 +39,6 @@ data class MonthlyCategoryInfo(
         get() = if (maxAmount == 0) 0 else (remainingAmount * 100 / maxAmount)
 }
 
-@Preview(showBackground = true)
-@Composable
-fun AvailableDetailScreenPreview() {
-    val navController = rememberNavController()
-    AvailableDetailScreen(navController, "2025년 5월")
-}
-
 @Composable
 fun AvailableDetailScreen(
     navController: NavController,
@@ -56,7 +49,7 @@ fun AvailableDetailScreen(
     var editingCategory by remember { mutableStateOf<String?>(null) }
     var input by remember { mutableStateOf("") }
 
-    val selectedMonth = selectedDate // 텍스트만 표시
+    val selectedMonth = selectedDate
     val selectedYearMonth = remember(selectedMonth) {
         try {
             val parsed = SimpleDateFormat("yyyy년 M월", Locale.KOREA).parse(selectedMonth)
@@ -75,45 +68,51 @@ fun AvailableDetailScreen(
         (predefinedCategories + "기타").forEach { availableViewModel.loadAmount(it) }
     }
 
-    val monthlyCategoryInfoList =
-        remember(transactions.value, selectedYearMonth, categoryAmountMap) {
-            val expenseList = transactions.value
-                .filterIsInstance<TransactionDetail.Expense>()
-                .map { it.data }
-                .filter { selectedYearMonth != null && it.date.toYearMonth() == selectedYearMonth }
+    val incomeByCategory = remember(transactions.value, selectedYearMonth) {
+        transactions.value
+            .filterIsInstance<TransactionDetail.Income>()
+            .map { it.data }
+            .filter { selectedYearMonth != null && it.date.toYearMonth() == selectedYearMonth }
+            .groupBy { it.category }
+    }
 
-            buildList {
-                for (category in predefinedCategories) {
-                    val spent = expenseList.filter { it.category == category }.sumOf { it.price }
-                    val max = categoryAmountMap[category] ?: 0
-                    add(
-                        MonthlyCategoryInfo(
-                            month = selectedMonth,
-                            categoryName = category,
-                            remainingAmount = (max - spent).coerceAtLeast(0),
-                            maxAmount = max
-                        )
-                    )
-                }
+    val incomeTotal = incomeByCategory.values.flatten().sumOf { it.price }
 
-                val otherSpent =
-                    expenseList.filter { it.category !in predefinedCategories }.sumOf { it.price }
-                val max = categoryAmountMap["기타"] ?: 0
+    val monthlyCategoryInfoList = remember(transactions.value, selectedYearMonth, categoryAmountMap) {
+        val expenseList = transactions.value
+            .filterIsInstance<TransactionDetail.Expense>()
+            .map { it.data }
+            .filter { selectedYearMonth != null && it.date.toYearMonth() == selectedYearMonth }
+
+        buildList {
+            for (category in predefinedCategories) {
+                val spent = expenseList.filter { it.category == category }.sumOf { it.price }
+                val max = categoryAmountMap[category] ?: 0
                 add(
                     MonthlyCategoryInfo(
                         month = selectedMonth,
-                        categoryName = "기타",
-                        remainingAmount = (max - otherSpent).coerceAtLeast(0),
+                        categoryName = category,
+                        remainingAmount = (max - spent).coerceAtLeast(0),
                         maxAmount = max
                     )
                 )
             }
+
+            val otherSpent = expenseList.filter { it.category !in predefinedCategories }.sumOf { it.price }
+            val max = categoryAmountMap["기타"] ?: 0
+            add(
+                MonthlyCategoryInfo(
+                    month = selectedMonth,
+                    categoryName = "기타",
+                    remainingAmount = (max - otherSpent).coerceAtLeast(0),
+                    maxAmount = max
+                )
+            )
         }
+    }
 
     val averagePercent = if (monthlyCategoryInfoList.isEmpty()) 0
     else monthlyCategoryInfoList.map { it.remainingPercent }.average().toInt()
-
-    val totalRemaining = monthlyCategoryInfoList.sumOf { it.remainingAmount }
 
     Column(
         modifier = Modifier
@@ -159,7 +158,6 @@ fun AvailableDetailScreen(
             Text("남은 비율", fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
         }
 
-
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyColumn(modifier = Modifier.weight(1f)) {
@@ -198,13 +196,37 @@ fun AvailableDetailScreen(
                             .padding(horizontal = 8.dp, vertical = 2.dp)
                     )
                 }
+            }
 
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "총 수입: %,d원".format(incomeTotal),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color(0xFF388E3C),
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+                incomeByCategory.forEach { (category, incomes) ->
+                    Text(
+                        text = "▶ $category",
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF2E7D32),
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                    incomes.forEach { income ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp, horizontal = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = income.name)
+                            Text(text = "% ,d원".format(income.price), fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
             }
         }
-
-        HorizontalDivider(thickness = 1.dp, color = Color.Gray)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text("전체 남은 금액: ${totalRemaining}원", style = MaterialTheme.typography.bodyLarge)
 
         Spacer(modifier = Modifier.weight(1f))
 
